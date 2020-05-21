@@ -40,12 +40,26 @@ public:
 	unsigned char applyExpoValue(unsigned char inputValue);
 
 
+	// returns the current value
+	unsigned char getCalculatedValue();
+
+
+
+	// Calibration
+	void setCalibrationMinValue(unsigned char axisCalibrationMinValue);
+	void setCalibrationMaxValue(unsigned char axisCalibrationMaxValue);
+	unsigned char applyCalibration(unsigned char inputValue);
+
 private:
+
+
 	signed char myTrim;
 	unsigned char myDeadZone;
 	bool isReverse;
-	unsigned char myRawInputValue;
 	float myExpo;
+
+	unsigned char axisCalibrationMinValue;
+	unsigned char axisCalibrationMaxValue;
 
 };
 

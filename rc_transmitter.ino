@@ -10,6 +10,8 @@
 #include "RCStick.h"
 #include "MyRemoteControlProtocolV2.h"
 #include <ArduinoLog.h>
+// #include "RCStickAxisFunctions.h"
+#include "Axis.h"
 
 
 #define ANALOG_IN_MAX 1024
@@ -19,28 +21,49 @@
 #define HW_NUMBER_OF_STICKS 1
 #define HW_HAS_STATUS_LED 1
 
+// define if we have a display
+#define HW_HAS_DISPLAY 1
+
+// define if we have native buttons directly connected to the arduino pins
+#define HW_HAS_NATIVE_BUTTONS 1
+
 #if HW_NUMBER_OF_STICKS > 0
 	#define STICK_LX 0
 	#define STICK_LY 1
 	#define STICK_LEFT 0
 
+	// RANGE LIMITATIONS (calibration of poti)
+	// to save memory this calibration can be done by define statement. It won't change until hardware changes
+	#define STICK_LX_MIN_RANGE 30
+	#define STICK_LX_MAX_RANGE 225
+	#define STICK_LY_MIN_RANGE 88
+	#define STICK_LY_MAX_RANGE 202
+
 	// TRIM
-	#define STICK_LX_TRIM 0
-	#define STICK_LY_TRIM 0
+	#define STICK_LX_TRIM -20
+	#define STICK_LY_TRIM 20
+
 
 	// DEADZONE
 	#define STICK_LX_DEADZONE 2
 	#define STICK_LY_DEADZONE 2
 
 	// PIN ASSIGNMENT
-	#define STICK_LX_PIN A0
-	#define STICK_LY_PIN A1
+	#define STICK_LX_PIN A6
+	#define STICK_LY_PIN A7
 #endif
 
 #if HW_NUMBER_OF_STICKS >1
 	#define STICK_RX 2
 	#define STICK_RY 3
 	#define STICK_RIGHT 1
+
+	// RANGE LIMITATIONS (calibration of poti)
+	// to save memory this calibration can be done by define statement. It won't change until hardware changes
+	#define STICK_RX_MIN_RANGE 15
+	#define STICK_RX_MAX_RANGE 240
+	#define STICK_RY_MIN_RANGE 15
+	#define STICK_RY_MAX_RANGE 240
 
 	// TRIM
 	#define STICK_RX_TRIM 0
@@ -51,8 +74,8 @@
 	#define STICK_RY_DEADZONE 10
 
 	// PIN ASSIGNMENT
-	#define STICK_RX_PIN A2
-	#define STICK_RY_PIN A3
+	#define STICK_RX_PIN A6
+	#define STICK_RY_PIN A7
 #endif
 
 
@@ -60,6 +83,30 @@
 #if HW_HAS_STATUS_LED
 	#define STATUS_LED_PIN 7
 #endif
+
+
+#if HW_HAS_DISPLAY
+	#include <U8x8lib.h>
+	#ifdef U8X8_HAVE_HW_SPI
+	#include <SPI.h>
+	#endif
+	U8X8_SH1106_128X64_NONAME_HW_I2C display(/* reset=*/ U8X8_PIN_NONE);
+	unsigned char displayContrast = 10;
+#endif
+
+#if HW_HAS_NATIVE_BUTTONS
+	#include <PushButton.h>
+	#define BUTTON_BACK_PIN A3
+	#define BUTTON_ENTER_PIN 8
+	#define BUTTON_UP_PIN A1
+	#define BUTTON_DOWN_PIN 4
+	#define BUTTON_LEFT_PIN A0
+	#define BUTTON_RIGHT_PIN 6
+
+	PushButton PB_BACK(1, BUTTON_BACK_PIN);
+#endif
+
+
 
 // add RC Sticks (which owns 2 axis each)
 RCStick sticks[HW_NUMBER_OF_STICKS];
@@ -96,7 +143,7 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 
 	// TRANSMISSION LEVEL
 	#define TRANSMISSION_LEVEL RF24_PA_MIN
-	#define TRANSMISSION_LEVEL RF24_PA_LOW
+	//#define TRANSMISSION_LEVEL RF24_PA_LOW
 #endif
 
 
@@ -112,6 +159,52 @@ unsigned char seletedRadio = RADIO_INTERFACE_NRF24L01;
 #define MIN_SEND_INTERVAL_MS 25
 //#define MIN_SEND_INTERVAL_MS 500
 unsigned long lastSendTime=0;
+
+
+bool isButtonBackPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		PB_BACK.processButtonState();
+		return PB_BACK.getButtonStateLogical();
+
+		//return digitalRead((unsigned char) BUTTON_BACK_PIN);
+	#endif
+}
+
+bool isButtonEnterPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		return digitalRead((unsigned char) BUTTON_ENTER_PIN);
+	#endif
+}
+
+bool isButtonLeftPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		return digitalRead((unsigned char) BUTTON_LEFT_PIN);
+	#endif
+}
+
+bool isButtonRightPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		return digitalRead((unsigned char) BUTTON_RIGHT_PIN);
+	#endif
+}
+
+bool isButtonUpPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		return digitalRead((unsigned char) BUTTON_UP_PIN);
+	#endif
+}
+
+bool isButtonDownPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		return digitalRead((unsigned char) BUTTON_DOWN_PIN);
+	#endif
+}
 
 /**
  * to include in setup()
@@ -144,6 +237,33 @@ void setupInterfaceRadioNrf24L01()
 	#endif
 }
 
+/**
+ * to be included into setup procedure
+ */
+void setupDisplay()
+{
+#if HW_HAS_DISPLAY
+	display.begin();
+	display.setPowerSave(0);
+	display.setContrast(displayContrast);
+	//display.setFont(u8x8_font_chroma48medium8_r);
+	display.setFont(u8x8_font_artossans8_u);
+	display.drawString(2,3,"VERSION: 0.1");
+#endif
+}
+
+
+void setupNativeButtons()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pinMode(BUTTON_BACK_PIN,INPUT_PULLUP);
+		pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
+		pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
+		pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
+		pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
+		pinMode(BUTTON_ENTER_PIN, INPUT_PULLUP);
+		#endif
+}
 
 
 void setup() {
@@ -157,11 +277,30 @@ void setup() {
 		pinMode(STATUS_LED_PIN, OUTPUT);
 	#endif
 
+	#if HW_HAS_DISPLAY
+		setupDisplay();
+	#endif
+
+	#if HW_HAS_NATIVE_BUTTONS
+		setupNativeButtons();
+	#endif
+
 
 	// setup interface nrf24L01
 	setupInterfaceRadioNrf24L01();
 
 	#if HW_NUMBER_OF_STICKS > 0
+	// sticks, set arduino pins
+	sticks[STICK_LEFT].getAxis(AXIS_X)->setArduinoPin(STICK_LX_PIN);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)->setArduinoPin(STICK_LY_PIN);
+
+	// set poti limits
+	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMinValue(STICK_LX_MIN_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMaxValue(STICK_LX_MAX_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMinValue(STICK_LY_MIN_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_MAX_RANGE);
+
+
 	// sticks, set trim
 	sticks[STICK_LEFT].getAxis(AXIS_X)->setTrim(STICK_LX_TRIM);
 	sticks[STICK_LEFT].getAxis(AXIS_Y)->setTrim(STICK_LY_TRIM);
@@ -270,17 +409,84 @@ void loop() {
 	// read input of analog sticks
 	#if HW_NUMBER_OF_STICKS > 0
 		#if HW_NUMBER_OF_STICKS == 1
-			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_RX);
+//		unsigned char x=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+//		unsigned char y=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+//		Log.notice("x=%d, y=%d\n", x,y);
+
+		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_RX);
 		#else
-			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
+			//rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
+			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_LX);
 		#endif
-		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_LY_PIN)), PROT_STICK_LY);
+
+		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)-> getCalculatedValueFromPin(), PROT_STICK_LY);
 	#endif
 
 	#if HW_NUMBER_OF_STICKS > 1
 		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_RX_PIN)), PROT_STICK_RX);
 		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_RY_PIN)), PROT_STICK_RY);
 	#endif
+
+
+
+//
+//
+//	if (isButtonBackPressed())
+//	{
+//		display.drawString(0, 0, "BK");
+//	}
+//	else
+//	{
+//		display.drawString(0, 0, "  ");
+//	}
+//
+//
+//	if (isButtonEnterPressed())
+//	{
+//		display.drawString(14, 0, "EN");
+//	}
+//	else
+//	{
+//		display.drawString(14, 0, "  ");
+//	}
+//
+//	if (isButtonUpPressed())
+//	{
+//		display.drawString(9, 0, "UP");
+//	}
+//	else
+//	{
+//		display.drawString(9, 0, "  ");
+//	}
+//
+//
+//	if (isButtonDownPressed())
+//	{
+//		display.drawString(9, 6, "DN");
+//	}
+//	else
+//	{
+//		display.drawString(9, 6, "  ");
+//	}
+//
+//
+//	if (isButtonRightPressed())
+//	{
+//		display.drawString(13, 6, "RGT");
+//	}
+//	else
+//	{
+//		display.drawString(13, 6, "   ");
+//	}
+//
+//	if (isButtonLeftPressed())
+//	{
+//		display.drawString(0, 6, "LFT");
+//	}
+//	else
+//	{
+//		display.drawString(0, 6, "   ");
+//	}
 
 	// build protocol value incl. CRC and send it
 	// not sure here what to do with the pointer.

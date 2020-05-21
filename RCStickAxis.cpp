@@ -18,7 +18,6 @@ RCStickAxis::RCStickAxis()
 	myTrim = DEFAULT_TRIM;
 	myDeadZone = DEFAULT_DEAD_ZONE;
 	isReverse = DEFAULT_REVERSE;
-	myRawInputValue = 0;
 	myExpo = DEFAULT_EXPO;
 
 }
@@ -198,3 +197,29 @@ bool RCStickAxis::getReverse()
 {
 	return isReverse;
 }
+
+
+/**
+ * set the calibrated min input value which is limited by hardware / poti
+ */
+void RCStickAxis::setCalibrationMinValue(unsigned char axisCalibrationMinValue)
+{
+	this -> axisCalibrationMinValue = axisCalibrationMinValue;
+}
+
+/**
+ * set the calibrated max input value which is limited by hardware / poti
+ */
+void RCStickAxis::setCalibrationMaxValue(unsigned char axisCalibrationMaxValue)
+{
+	this -> axisCalibrationMaxValue = axisCalibrationMaxValue;
+}
+
+/**
+ * applies calibration to the given inputValue
+ */
+unsigned char RCStickAxis::applyCalibration(unsigned char inputValue)
+{
+
+}
+

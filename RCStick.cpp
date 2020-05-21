@@ -9,7 +9,7 @@
 
 RCStick::RCStick() {
 	// create to axis for this stick
-	RCStickAxis myAxes={};
+	Axis myAxes={};
 }
 
 RCStick::~RCStick() {
@@ -19,7 +19,7 @@ RCStick::~RCStick() {
 /**
  * returns pointer to axis. If out of bounds, returning nullptr.
  */
-RCStickAxis * RCStick::getAxis(unsigned char axis)
+Axis * RCStick::getAxis(unsigned char axis)
 {
 	// check bounds
 	if (axis >=0 && axis < sizeof (myAxes))
