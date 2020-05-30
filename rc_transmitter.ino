@@ -12,20 +12,14 @@
 #include <ArduinoLog.h>
 // #include "RCStickAxisFunctions.h"
 #include "Axis.h"
+#include "hw_config.h"
+#include "Menu.h"
 
 
-#define ANALOG_IN_MAX 1024
+#define VERSIONSTRING "0.1"
 
 
 
-#define HW_NUMBER_OF_STICKS 1
-#define HW_HAS_STATUS_LED 1
-
-// define if we have a display
-#define HW_HAS_DISPLAY 1
-
-// define if we have native buttons directly connected to the arduino pins
-#define HW_HAS_NATIVE_BUTTONS 1
 
 #if HW_NUMBER_OF_STICKS > 0
 	#define STICK_LX 0
@@ -86,24 +80,27 @@
 
 
 #if HW_HAS_DISPLAY
+	// define the display config
 	#include <U8x8lib.h>
 	#ifdef U8X8_HAVE_HW_SPI
 	#include <SPI.h>
 	#endif
 	U8X8_SH1106_128X64_NONAME_HW_I2C display(/* reset=*/ U8X8_PIN_NONE);
 	unsigned char displayContrast = 10;
+
+
+	// define the menu (without display the menu makes no sense
+	Menu menu(&display);
 #endif
 
 #if HW_HAS_NATIVE_BUTTONS
 	#include <PushButton.h>
-	#define BUTTON_BACK_PIN A3
-	#define BUTTON_ENTER_PIN 8
-	#define BUTTON_UP_PIN A1
-	#define BUTTON_DOWN_PIN 4
-	#define BUTTON_LEFT_PIN A0
-	#define BUTTON_RIGHT_PIN 6
-
-	PushButton PB_BACK(1, BUTTON_BACK_PIN);
+	PushButton pushButtonBack(1, BUTTON_BACK_PIN);
+	PushButton pushButtonUp(1, BUTTON_UP_PIN);
+	PushButton pushButtonDown(1, BUTTON_DOWN_PIN);
+	PushButton pushButtonLeft(1, BUTTON_LEFT_PIN);
+	PushButton pushButtonRight(1, BUTTON_RIGHT_PIN);
+	PushButton pushButtonEnter(1, BUTTON_ENTER_PIN);
 #endif
 
 
@@ -160,49 +157,64 @@ unsigned char seletedRadio = RADIO_INTERFACE_NRF24L01;
 //#define MIN_SEND_INTERVAL_MS 500
 unsigned long lastSendTime=0;
 
+bool negateBoolean(bool boolToNegate)
+{
+	if (boolToNegate)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
 
-bool isButtonBackPressed()
+
+bool isButtonBackPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		PB_BACK.processButtonState();
-		return PB_BACK.getButtonStateLogical();
-
-		//return digitalRead((unsigned char) BUTTON_BACK_PIN);
+		pushButtonBack.processButtonState();
+		return pushButtonBack.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonEnterPressed()
+bool isButtonEnterPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		return digitalRead((unsigned char) BUTTON_ENTER_PIN);
+		pushButtonEnter.processButtonState();
+		return pushButtonEnter.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonLeftPressed()
+bool isButtonLeftPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		return digitalRead((unsigned char) BUTTON_LEFT_PIN);
+		pushButtonLeft.processButtonState();
+		return pushButtonLeft.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonRightPressed()
+bool isButtonRightPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		return digitalRead((unsigned char) BUTTON_RIGHT_PIN);
+		pushButtonRight.processButtonState();
+		return pushButtonRight.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonUpPressed()
+bool isButtonUpPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		return digitalRead((unsigned char) BUTTON_UP_PIN);
+		pushButtonUp.processButtonState();
+		return pushButtonUp.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonDownPressed()
+bool isButtonDownPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		return digitalRead((unsigned char) BUTTON_DOWN_PIN);
+		pushButtonDown.processButtonState();
+		return pushButtonDown.getButtonPressedOnlyOnce();
 	#endif
 }
 
@@ -248,7 +260,11 @@ void setupDisplay()
 	display.setContrast(displayContrast);
 	//display.setFont(u8x8_font_chroma48medium8_r);
 	display.setFont(u8x8_font_artossans8_u);
-	display.drawString(2,3,"VERSION: 0.1");
+	//display.drawString(2,3,"VERSION: ");
+	//display.draw(VERSIONSTRING);
+	display.setCursor(2, 3);
+	display.print("VERSION: ");
+	display.print(VERSIONSTRING);
 #endif
 }
 
@@ -279,6 +295,10 @@ void setup() {
 
 	#if HW_HAS_DISPLAY
 		setupDisplay();
+
+		Log.verbose(F("display address: %d\n"), &display);
+		Log.verbose(F("menu display address: %d\n"), menu.debugDisplayAddress());
+
 	#endif
 
 	#if HW_HAS_NATIVE_BUTTONS
@@ -403,42 +423,73 @@ void nrfSendStaticDummyData()
 }
 
 
+/**
+ * processes the menu buttons
+ */
+void processMenuButtons()
+{
+	if (isButtonUpPressedOnce())
+	{
+		menu.moveCursorUp();
+		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
+	}
+	if (isButtonDownPressedOnce())
+	{
+		menu.moveCursorDown();
+		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
+	}
+	if (isButtonEnterPressedOnce())
+	{
+		menu.printSubmenu();
+		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
+	}
+}
+
+
 void loop() {
 
-	// Log.notice(F("reading stick\n"));
-	// read input of analog sticks
-	#if HW_NUMBER_OF_STICKS > 0
-		#if HW_NUMBER_OF_STICKS == 1
-//		unsigned char x=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
-//		unsigned char y=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
-//		Log.notice("x=%d, y=%d\n", x,y);
-
-		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_RX);
-		#else
-			//rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
-			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_LX);
-		#endif
-
-		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)-> getCalculatedValueFromPin(), PROT_STICK_LY);
-	#endif
-
-	#if HW_NUMBER_OF_STICKS > 1
-		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_RX_PIN)), PROT_STICK_RX);
-		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_RY_PIN)), PROT_STICK_RY);
-	#endif
-
+//	// Log.notice(F("reading stick\n"));
+//	// read input of analog sticks
+//	#if HW_NUMBER_OF_STICKS > 0
+//		#if HW_NUMBER_OF_STICKS == 1
+////		unsigned char x=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+////		unsigned char y=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+////		Log.notice("x=%d, y=%d\n", x,y);
+//
+//		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_RX);
+//		#else
+//			//rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
+//			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_LX);
+//		#endif
+//
+//		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)-> getCalculatedValueFromPin(), PROT_STICK_LY);
+//	#endif
+//
+////	#if HW_NUMBER_OF_STICKS > 1
+////		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_RX_PIN)), PROT_STICK_RX);
+////		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_RY_PIN)), PROT_STICK_RY);
+////	#endif
+//
 
 
 //
 //
-//	if (isButtonBackPressed())
-//	{
-//		display.drawString(0, 0, "BK");
-//	}
-//	else
-//	{
-//		display.drawString(0, 0, "  ");
-//	}
+	if (isButtonBackPressedOnce())
+	{
+		menu.printMenuId(menu.getMenuLevelUpId());
+		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
+	}
+
+
+
+	// check menu buttons if in menu
+	if (menu.getCurrentMenuId() != MENU_ID_NONE)
+	{
+		// we are in a menu
+
+		// check menu buttons
+		processMenuButtons();
+	}
 //
 //
 //	if (isButtonEnterPressed())
@@ -479,7 +530,7 @@ void loop() {
 //		display.drawString(13, 6, "   ");
 //	}
 //
-//	if (isButtonLeftPressed())
+//	if (isButtonLeftPressedOnce())
 //	{
 //		display.drawString(0, 6, "LFT");
 //	}
@@ -502,7 +553,7 @@ void loop() {
 
 	// Serial.println("MY_SIZE");
 	// Serial.println((int) rcProtocol.getProtocolLength());
-	mySend(rcProtocol.getValueArray(), rcProtocol.getProtocolLength(), seletedRadio);
+//	mySend(rcProtocol.getValueArray(), rcProtocol.getProtocolLength(), seletedRadio);
 	//nrfSendStaticDummyData();
 	//delay (1000);
 
