@@ -14,6 +14,8 @@
 	#include <SPI.h>
 #endif
 
+#include "RCStick.h"
+
 #define FIRST_MENU_LINE 2
 #define DISPLAY_NUMBER_OF_LINES 8
 
@@ -26,20 +28,31 @@
 #define MENU_ID_RECEIVER 5 // menu where to choose the reviever
 #define MENU_ID_BUTTONS 20 // menu where to choose buttons for config
 
+#define MENU_COL_0_X_POS 2
+
+#define MENU_AXIS_VALUE_X_POS 9
+#define MENU_AXIS_DEAD_POS 0
+#define MENU_AXIS_TRIM_POS 1
+#define MENU_AXIS_EXP_POS 2
+#define MENU_AXIS_EXP_REVERSE 3
+
+
 
 class Menu {
 
 private:
 	unsigned char menuCursorY;
 	unsigned char currentMenuNumberOfEntries;
-	U8X8_SH1106_128X64_NONAME_HW_I2C *pDisplay;
+	U8X8_SH1106_128X64_NONAME_HW_I2C *pDisplay; // pointer to display
+	RCStick *mySticks; // pointer to sticks
+
 	void printHeadline(char *headline); // prints the headline to display
 
 	unsigned char currentMenuId; // saves the current ID of the menu
 	unsigned char getSelectedMenuEntryId();
 
 public:
-	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display);
+	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks);
 	virtual ~Menu();
 
 	void processCursorNavigation();
@@ -68,7 +81,7 @@ public:
 
 	void printMenuReceiver();
 	void printMenuButtons();
-	void printMenuAxisDetails(unsigned char axisId);
+	void printMenuAxisDetails(unsigned char axisMenuId);
 
 
 };

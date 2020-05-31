@@ -223,3 +223,20 @@ unsigned char RCStickAxis::applyCalibration(unsigned char inputValue)
 
 }
 
+/**
+ * sets the expo value
+ */
+void RCStickAxis::setExpo(float expoValue)
+{
+	myExpo = expoValue;
+}
+
+
+/**
+ * getsthe expo value
+ */
+float RCStickAxis::getExpo()
+{
+	return myExpo;
+}
+

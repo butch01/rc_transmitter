@@ -130,3 +130,22 @@ void Axis::setArduinoPin(unsigned char arduinoAnalogPin)
 {
 	this -> myArduinoPin = arduinoAnalogPin;
 }
+
+
+/**
+ * sets the expo value
+ */
+void Axis::setExpo(float expoValue)
+{
+	myExpo = expoValue;
+}
+
+
+/**
+ * getsthe expo value
+ */
+float Axis::getExpo()
+{
+	return myExpo;
+}
+

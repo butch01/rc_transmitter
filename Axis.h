@@ -35,6 +35,10 @@ class Axis {
 		// Arduino Pin
 		void setArduinoPin(unsigned char arduinoAnalogPin);
 
+
+		void setExpo(float expoValue); // sets the expo value
+		float getExpo(); // gets the exp value
+
 	private:
 
 		signed char myTrim;

@@ -90,7 +90,7 @@
 
 
 	// define the menu (without display the menu makes no sense
-	Menu menu(&display);
+	Menu menu(&display, sticks);
 #endif
 
 #if HW_HAS_NATIVE_BUTTONS
@@ -283,6 +283,8 @@ void setupNativeButtons()
 
 
 void setup() {
+
+
 	Serial.begin(115200);
 	//Serial.println(F("starting sender ;-)"));
 	Log.begin   (LOG_LEVEL_VERBOSE, &Serial);

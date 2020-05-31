@@ -39,6 +39,9 @@ public:
 	unsigned char applyAll(unsigned char inputValue);
 	unsigned char applyExpoValue(unsigned char inputValue);
 
+	void setExpo(float expoValue); // sets the expo value
+	float getExpo(); // gets the exp value
+
 
 	// returns the current value
 	unsigned char getCalculatedValue();

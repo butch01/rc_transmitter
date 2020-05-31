@@ -8,13 +8,14 @@
 #include "Menu.h"
 #include <ArduinoLog.h>
 
-Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display)
+Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks)
 {
 	pDisplay = display;
 	menuCursorY=(unsigned char) FIRST_MENU_LINE;
 	currentMenuNumberOfEntries=0;
 	currentMenuId=0;
-//	Log.verbose(F("in constructor %d\n"),  &display);
+	mySticks=sticks;
+
 }
 
 Menu::~Menu() {
@@ -302,15 +303,19 @@ void Menu::printMenuButtons()
 	currentMenuNumberOfEntries=0;
 }
 
-void Menu::printMenuAxisDetails(unsigned char axisId)
+/**
+ * shows details to an axis
+ */
+void Menu::printMenuAxisDetails(unsigned char axisMenuId)
 {
 	currentMenuId=MENU_ID_AXIS;
 	pDisplay->clear();
+	unsigned char axisId = 0;
 
 
 	// dirty workaround
 	// this part needs to be generalized. But How do I modify the stings / chars
-	if ((unsigned char) axisId /2 == 0)
+	if ((unsigned char) axisMenuId /2 == 0)
 	{
 		if (axisId %2 == 0)
 		{
@@ -323,7 +328,7 @@ void Menu::printMenuAxisDetails(unsigned char axisId)
 	}
 	else
 	{
-		if ((unsigned char) axisId /2 == 1)
+		if ((unsigned char) axisMenuId /2 == 1)
 		{
 			if (axisId %2 == 0)
 			{
@@ -340,17 +345,25 @@ void Menu::printMenuAxisDetails(unsigned char axisId)
 
 
 	unsigned char y=FIRST_MENU_LINE;
-	pDisplay->setCursor(2, y);
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_DEAD_POS);
 	pDisplay->print("DEAD: ");
-	y++;
-	pDisplay->setCursor(2, y);
-	pDisplay->print("TRIM:");
-	y++;
-	pDisplay->setCursor(2, y);
-	pDisplay->print(" EXP:");
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getDeadZone());
 
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_TRIM_POS);
+	pDisplay->print("TRIM:");
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getTrim());
+
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_EXP_POS);
+	pDisplay->print(" EXP:");
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getExpo());
+
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_EXP_REVERSE);
+	pDisplay->print(" EXP:");
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_EXP_REVERSE, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getReverse());
 	menuCursorY = FIRST_MENU_LINE;
-	currentMenuNumberOfEntries=y - FIRST_MENU_LINE +1;
+	currentMenuNumberOfEntries=3;
 	printMenuCursor();
 
 }
+
+
