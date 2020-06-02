@@ -23,6 +23,11 @@ class Axis {
 		void setReverse(bool isReverse);
 		bool getReverse();
 
+
+		void setExpo(float expoValue); // sets the expo value
+		float getExpo(); // gets the exp value
+
+
 		// returns the current value
 		unsigned char getCalculatedValueFromPin();
 
@@ -36,14 +41,11 @@ class Axis {
 		void setArduinoPin(unsigned char arduinoAnalogPin);
 
 
-		void setExpo(float expoValue); // sets the expo value
-		float getExpo(); // gets the exp value
-
 	private:
 
 		signed char myTrim;
 		unsigned char myDeadZone;
-		bool isReverse;
+		bool myIsReverse;
 		float myExpo;
 
 		unsigned char myAxisCalibrationMinValue;

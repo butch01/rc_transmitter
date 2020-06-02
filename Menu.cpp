@@ -12,9 +12,11 @@ Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks)
 {
 	pDisplay = display;
 	menuCursorY=(unsigned char) FIRST_MENU_LINE;
-	currentMenuNumberOfEntries=0;
-	currentMenuId=0;
-	mySticks=sticks;
+	currentMenuNumberOfEntries = 0;
+	currentMenuId = 0;
+	mySticks = sticks;
+	myIsEditMode = false;
+	myCurrentAxisMenuId=-1;
 
 }
 
@@ -32,29 +34,43 @@ int Menu::debugDisplayAddress()
 
 /**
  * moves the menu corser 1 line up, but stay in bounds
+ * no moving if in edit mode
  */
 void Menu::moveCursorUp()
 {
-	if (menuCursorY > FIRST_MENU_LINE)
+
+	if (!myIsEditMode)
 	{
-		menuCursorY--;
-		printMenuCursor();
+
+		// only do if not in edit mode
+		if (menuCursorY > FIRST_MENU_LINE)
+		{
+			menuCursorY--;
+			printMenuCursor();
+		}
+		Log.verbose(F("y after press: %d, number of elements: %d"), menuCursorY, currentMenuNumberOfEntries);
 	}
-	Log.verbose(F("y after press: %d, number of elements: %d"), menuCursorY, currentMenuNumberOfEntries);
+
 }
 
 
 /**
  * moves the menu corser 1 line down, but stay in bounds
+ * no moving if in edit mode
  */
 void Menu::moveCursorDown()
 {
-	if ((menuCursorY < DISPLAY_NUMBER_OF_LINES -1 ) && (menuCursorY < 2+ currentMenuNumberOfEntries - 1))
+	if (!myIsEditMode)
 	{
-		menuCursorY++;
-		printMenuCursor();
+
+		// only do if not in edit mode
+		if ((menuCursorY < DISPLAY_NUMBER_OF_LINES -1 ) && (menuCursorY < 2+ currentMenuNumberOfEntries - 1))
+		{
+			menuCursorY++;
+			printMenuCursor();
+		}
+		Log.verbose(F("y after press: %d, number of elements: %d"), menuCursorY, currentMenuNumberOfEntries);
 	}
-	Log.verbose(F("y after press: %d, number of elements: %d"), menuCursorY, currentMenuNumberOfEntries);
 }
 
 /**
@@ -164,28 +180,35 @@ unsigned char Menu::getMenuLevelUpId()
 	}
 }
 
+/**
+ * prints a Menu.
+ * no printing if in edit mode
+ */
 void Menu::printMenuId(unsigned char menuIdToPrint)
 {
-	switch (menuIdToPrint)
+	if (!myIsEditMode)
 	{
-		case MENU_ID_NONE:
-			currentMenuId=MENU_ID_NONE;
-			pDisplay->clearDisplay();
-			break;
+		// do only if not in edit mode
+		switch (menuIdToPrint)
+		{
+			case MENU_ID_NONE:
+				currentMenuId=MENU_ID_NONE;
+				pDisplay->clearDisplay();
+				break;
 
-		case MENU_ID_MAIN:
-			printMenuMain();
-			break;
+			case MENU_ID_MAIN:
+				printMenuMain();
+				break;
 
-		case MENU_ID_AXIS_CHOOSER:
-			printMenuAxisChooser();
-			break;
+			case MENU_ID_AXIS_CHOOSER:
+				printMenuAxisChooser();
+				break;
 
-		default:
-			printMenuMain();
-			break;
+			default:
+				printMenuMain();
+				break;
 
-
+		}
 
 	}
 }
@@ -251,9 +274,9 @@ unsigned char Menu::getSelectedMenuEntryId()
 }
 
 /**
- * prints the submenu, base on the current cursor position and current menu
+ * prints the submenu or changes to edit mode, base on the current cursor position and current menu
  */
-void Menu::printSubmenu()
+void Menu::actionOnEnter()
 {
 	switch (currentMenuId)
 	{
@@ -272,17 +295,53 @@ void Menu::printSubmenu()
 					printMenuButtons();
 					Log.verbose(F("Menu: MENU_ID_MAIN -> call printMenuButtons\n"));
 					break;
+
 			}
 		break;
+
 		case MENU_ID_AXIS_CHOOSER:
-		{
 			// a stick has two axis
 			printMenuAxisDetails(getSelectedMenuEntryId());
 			Log.verbose(F("Menu: MENU_ID_AXIS_CHOOSER -> call printMenuAxisDetails with id %d \n"),getSelectedMenuEntryId());
 			break;
 
+		case MENU_ID_AXIS:
 
-		}
+			if (myIsEditMode)
+			{
+				// disable edit mode
+				myIsEditMode = false;
+				pDisplay-> setInverseFont(false);
+
+			}
+			else
+			{
+				// enable edit mode
+				myIsEditMode = true;
+				pDisplay-> setInverseFont(true);
+			}
+			switch (getSelectedMenuEntryId())
+			{
+				case MENU_AXIS_DEAD_Y_POS:
+					printAxisDeadzoneValue();
+					break;
+
+				case MENU_AXIS_EXPO_Y_POS:
+					printAxisExpoValue();
+					break;
+
+				case MENU_AXIS_REVERSE_Y_POS:
+					printAxisReverseValue();
+					break;
+
+				case MENU_AXIS_TRIM_Y_POS:
+					printAxisTrimValue();
+					break;
+
+			}
+
+
+
 	}
 }
 
@@ -311,6 +370,7 @@ void Menu::printMenuAxisDetails(unsigned char axisMenuId)
 	currentMenuId=MENU_ID_AXIS;
 	pDisplay->clear();
 	unsigned char axisId = 0;
+	myCurrentAxisMenuId = axisMenuId;
 
 
 	// dirty workaround
@@ -345,25 +405,217 @@ void Menu::printMenuAxisDetails(unsigned char axisMenuId)
 
 
 	unsigned char y=FIRST_MENU_LINE;
-	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_DEAD_POS);
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_DEAD_Y_POS + FIRST_MENU_LINE);
 	pDisplay->print("DEAD: ");
-	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getDeadZone());
+	printAxisDeadzoneValue( );
 
-	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_TRIM_POS);
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_TRIM_Y_POS + FIRST_MENU_LINE);
 	pDisplay->print("TRIM:");
-	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getTrim());
+	printAxisTrimValue();
 
-	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_EXP_POS);
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_EXPO_Y_POS + FIRST_MENU_LINE);
 	pDisplay->print(" EXP:");
-	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_COL_0_X_POS, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getExpo());
+	printAxisExpoValue();
 
-	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_EXP_REVERSE);
-	pDisplay->print(" EXP:");
-	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_EXP_REVERSE, 4, mySticks[axisMenuId /2].getAxis(axisMenuId %2)->getReverse());
+	pDisplay->setCursor(MENU_COL_0_X_POS, MENU_AXIS_REVERSE_Y_POS + FIRST_MENU_LINE);
+	pDisplay->print(" REV:");
+	printAxisReverseValue();
 	menuCursorY = FIRST_MENU_LINE;
-	currentMenuNumberOfEntries=3;
+	currentMenuNumberOfEntries=4;
 	printMenuCursor();
 
+}
+
+
+/**
+ * calculates the current stick id of the mySticks array.
+ * returns -1 on error
+ */
+signed char Menu::calculateStickId()
+{
+	if (myCurrentAxisMenuId == -1)
+	{
+		return -1;
+	}
+	else
+	{
+		return (signed char) (myCurrentAxisMenuId /2);
+	}
+}
+
+
+/**
+ * calculates the current axis of of the stick in myStick array.
+ * returns -1 on error.
+ */
+signed char Menu::calculateAxisId()
+{
+	if (myCurrentAxisMenuId == -1)
+	{
+		return -1;
+	}
+	else
+	{
+		return (signed char) (myCurrentAxisMenuId %2);
+	}
+}
+
+
+
+/**
+ * prints the deadzone value in axis detail menu
+ */
+void Menu::printAxisDeadzoneValue()
+{
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_DEAD_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getDeadZone());
+}
+
+/**
+ * prints the Trim value in axis detail menu
+ */
+void Menu::printAxisTrimValue()
+{
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_TRIM_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim());
+}
+
+
+/**
+ * prints the deadzone value in axis detail menu
+ */
+void Menu::printAxisReverseValue()
+{
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_REVERSE_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getReverse());
+}
+
+
+/**
+ * prints the Expo value in axis detail menu
+ */
+void Menu::printAxisExpoValue()
+{
+	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_EXPO_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo());
+}
+
+/**
+ * returns info if menu is in edit mode
+ */
+bool Menu::isEditMode()
+{
+	return myIsEditMode;
+}
+
+
+/**
+ * - checks if edit mode is active. If so:
+ * - get Value which is edited by shown menu and cursor position
+ * - increment the value
+ * - modifier can be set to -1 to turn the increase to a decrease (value is multiplied with -1)
+ */
+void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
+{
+	// do only if we are in edit mode, otherwise do nothing here
+	if (myIsEditMode)
+	{
+		unsigned char increment = DEFAULT_INCREMENT_CHAR;
+		float incrementFloat = (float) DEFAULT_INCREMENT_FLOAT;
+
+		if (currentMenuId == MENU_ID_AXIS)
+		{
+			// select the field which needs to be increased
+			switch (menuCursorY - (unsigned char) FIRST_MENU_LINE)
+			{
+				case MENU_AXIS_DEAD_Y_POS:
+
+					mySticks[calculateStickId()].getAxis(calculateAxisId())->setDeadZone(unsignedCharLimiter((unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getDeadZone() + increment * valueModifier));
+					printAxisDeadzoneValue();
+					Log.verbose(F("Menu::editIncreaseCurrentMenuValue, deadzone, increment: %d\n"), increment * valueModifier);
+					break;
+
+				case MENU_AXIS_EXPO_Y_POS:
+					mySticks[calculateStickId()].getAxis(calculateAxisId())->setExpo(mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo() + incrementFloat * valueModifier);
+					printAxisExpoValue();
+					break;
+
+				case MENU_AXIS_REVERSE_Y_POS:
+					// CAUTION: this will not work if value modifier is other than 1 or -1
+					if (valueModifier == 1)
+					{
+						mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(true);
+					}
+					if (valueModifier == -1)
+					{
+						mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(false);
+					}
+					printAxisReverseValue();
+					break;
+
+				case MENU_AXIS_TRIM_Y_POS:
+					Log.verbose("%d + %d\n", (unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim(),  (signed int) increment * valueModifier);
+					mySticks[calculateStickId()].getAxis(calculateAxisId())->setTrim(signedCharLimiter((signed int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim() + (signed int) increment * valueModifier));
+					printAxisTrimValue();
+					break;
+			}
+		}
+	}
+}
+
+/**
+ * decrease the current limit
+ * under the hood it calls editIncreaseCurrentValue(-1)
+ */
+void Menu::editDecreaseCurrentValue()
+{
+	editIncreaseCurrentMenuValue(-1);
+}
+
+
+/**
+ * limits an unsigned char to values boundaries of unsigned char (0 to 255).
+ * if value is out of bounds, the nearest boundary is returned.
+ */
+unsigned char Menu::unsignedCharLimiter(signed int unsignedCharToLimit)
+{
+	Log.verbose(F("Menu::unsignedCharLimiter (%d)\n"), unsignedCharToLimit);
+	if (unsignedCharToLimit > 255)
+	{
+		return 255;
+	}
+	else
+	{
+		if (unsignedCharToLimit < 0)
+		{
+			return 0;
+		}
+		else
+		{
+			return unsignedCharToLimit;
+		}
+	}
+
+}
+
+/**
+ * limits an unsigned char to values boundaries of unsigned char (-127 to 127).
+ * if value is out of bounds, the nearest boundary is returned.
+ */
+
+signed char Menu::signedCharLimiter(signed int signedCharToLimit)
+{
+	if (signedCharToLimit > 127)
+	{
+		return 127;
+	}
+	else
+	{
+		if (signedCharToLimit < -127)
+		{
+			return -127;
+		}
+		else
+		{
+			return signedCharToLimit;
+		}
+	}
 }
 
 

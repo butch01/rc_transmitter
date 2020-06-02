@@ -31,11 +31,14 @@
 #define MENU_COL_0_X_POS 2
 
 #define MENU_AXIS_VALUE_X_POS 9
-#define MENU_AXIS_DEAD_POS 0
-#define MENU_AXIS_TRIM_POS 1
-#define MENU_AXIS_EXP_POS 2
-#define MENU_AXIS_EXP_REVERSE 3
+#define MENU_AXIS_DEAD_Y_POS 0
+#define MENU_AXIS_TRIM_Y_POS 1
+#define MENU_AXIS_EXPO_Y_POS 2
+#define MENU_AXIS_REVERSE_Y_POS 3
 
+
+#define DEFAULT_INCREMENT_CHAR 1
+#define DEFAULT_INCREMENT_FLOAT 0.1
 
 
 class Menu {
@@ -50,6 +53,19 @@ private:
 
 	unsigned char currentMenuId; // saves the current ID of the menu
 	unsigned char getSelectedMenuEntryId();
+	bool myIsEditMode; // defines if we are currently in edit mode or not.
+
+	void printAxisDeadzoneValue();
+	void printAxisExpoValue();
+	void printAxisTrimValue();
+	void printAxisReverseValue();
+
+	signed char calculateStickId();
+	signed char calculateAxisId();
+
+	signed char myCurrentAxisMenuId; // Id of the axis (Stick 0X -> 0, Stick 0Y -> 1, Stick 1X -> 2, ...   -1 if not set / not applicable)
+	unsigned char unsignedCharLimiter(signed int unsignedCharToLimit);
+	signed char signedCharLimiter(signed int signedCharToLimit);
 
 public:
 	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks);
@@ -64,7 +80,7 @@ public:
 	void printMenuTrimStatic(); // print trim menu (static captions, no values)
 	void printMenuTrimValues(signed char *values); // prints the values for the trim menu. Values to print will be given by array
 
-	unsigned char Menu::getMenuElementId(); // returns the selected menu element
+	unsigned char getMenuElementId(); // returns the selected menu element
 	void printUpdateSingleValue(unsigned char x, unsigned char y, unsigned char length, signed int intValue); // prints a single int value. clears spaces before.
 	int debugDisplayAddress();
 
@@ -75,13 +91,18 @@ public:
 	unsigned char getCurrentMenuId();
 
 	unsigned char getMenuLevelUpId(); // returns the menu of the upper (in most cases previous) menu id.
-	void printSubmenu(); //prints the submenu
+	void actionOnEnter(); //prints the submenu
 
 	void printMenuId(unsigned char menuIdToPrint);
 
 	void printMenuReceiver();
 	void printMenuButtons();
 	void printMenuAxisDetails(unsigned char axisMenuId);
+
+	void editIncreaseCurrentMenuValue(signed char valueModifier=1);
+	void editDecreaseCurrentValue();
+
+	bool isEditMode(); // gets info if menu is in edit mode
 
 
 };

@@ -34,7 +34,7 @@ unsigned char Axis::getCalculatedValueFromPin()
 	return RCStickAxisFunctions::enrichValue(
 			analogRead(myArduinoPin), // inputValueRaw,
 			1024, // analogResolution,
-			isReverse, // isReverse,
+			myIsReverse, // isReverse,
 			myTrim, // trim,
 			myDeadZone, // deadZone,
 			myExpo, //expo,
@@ -142,10 +142,25 @@ void Axis::setExpo(float expoValue)
 
 
 /**
- * getsthe expo value
+ * gets the expo value
  */
 float Axis::getExpo()
 {
 	return myExpo;
 }
 
+/**
+ * sets reverse state for the axis
+ */
+void Axis::setReverse(bool isReverse)
+{
+	myIsReverse = isReverse;
+}
+
+/**
+ * returns if the axis is reverse or not
+ */
+bool Axis::getReverse()
+{
+	return myIsReverse;
+}

@@ -194,6 +194,14 @@ bool isButtonLeftPressedOnce()
 	#endif
 }
 
+bool isButtonLeftPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonLeft.processButtonState();
+		return pushButtonLeft.getButtonStateRawDebouncedInputPullup();
+	#endif
+}
+
 bool isButtonRightPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
@@ -201,6 +209,15 @@ bool isButtonRightPressedOnce()
 		return pushButtonRight.getButtonPressedOnlyOnce();
 	#endif
 }
+
+bool isButtonRightPressed()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonRight.processButtonState();
+		return pushButtonRight.getButtonStateRawDebouncedInputPullup();
+	#endif
+}
+
 
 bool isButtonUpPressedOnce()
 {
@@ -442,9 +459,20 @@ void processMenuButtons()
 	}
 	if (isButtonEnterPressedOnce())
 	{
-		menu.printSubmenu();
+		menu.actionOnEnter();
 		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
 	}
+
+	if (isButtonLeftPressed())
+	{
+		menu.editDecreaseCurrentValue();
+	}
+
+	if (isButtonRightPressed())
+	{
+		menu.editIncreaseCurrentMenuValue();
+	}
+
 }
 
 
