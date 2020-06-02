@@ -17,6 +17,7 @@ Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks)
 	mySticks = sticks;
 	myIsEditMode = false;
 	myCurrentAxisMenuId=-1;
+	lastEditChangeValueStartTime=0;
 
 }
 
@@ -516,44 +517,103 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 	// do only if we are in edit mode, otherwise do nothing here
 	if (myIsEditMode)
 	{
-		unsigned char increment = DEFAULT_INCREMENT_CHAR;
-		float incrementFloat = (float) DEFAULT_INCREMENT_FLOAT;
 
-		if (currentMenuId == MENU_ID_AXIS)
+		bool triggerIncrease = false;
+		unsigned long currentTime = millis();
+
+		Log.verbose(F("edit: %l - %l = %l\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+
+		// apply timeout
+		if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MODIFY_TIMEOUT)
 		{
-			// select the field which needs to be increased
-			switch (menuCursorY - (unsigned char) FIRST_MENU_LINE)
+			Log.verbose(F("edit: timeout -> %l\n"), MENU_MODIFY_TIMEOUT);
+			// reset timer
+			lastEditChangeValueStartTime = 0;
+			lastEditChangeValueLastTime= 0 ;
+
+		}
+
+		// check update interval
+		if (lastEditChangeValueStartTime == 0)
+		{
+			triggerIncrease = true;
+			lastEditChangeValueStartTime = currentTime;
+			lastEditChangeValueLastTime = currentTime;
+			Log.verbose(F("edit: %l - %l = %l - trigger new\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+		}
+		else
+		{
+
+			// not the first edit -> check the time to decide if we trigger the action now or not.
+			if (currentTime - lastEditChangeValueStartTime < (unsigned long) MENU_MODIFY_SLOW_TIME_RANGE)
 			{
-				case MENU_AXIS_DEAD_Y_POS:
+				Log.verbose(F("in slow interval\n"));
+				// use slow interval
+				// check if we need to trigger now
+				if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MODIFY_SLOW_INTERVAL_MS)
+				{
+					triggerIncrease = true;
+					lastEditChangeValueLastTime = currentTime;
+					Log.verbose(F("edit: %l - %l = %l - trigger slow\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+				}
+			}
+			else
+			{
+				// use fast interval
+				// check if we need to trigger now
+				Log.verbose(F("in fast interval\n"));
+				if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MOFIFY_FAST_INTERVAL_MS)
+				{
+					triggerIncrease = true;
+					lastEditChangeValueLastTime = currentTime;
+					Log.verbose(F("edit: %l - %l = %l - trigger fast\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+				}
+			}
+		}
 
-					mySticks[calculateStickId()].getAxis(calculateAxisId())->setDeadZone(unsignedCharLimiter((unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getDeadZone() + increment * valueModifier));
-					printAxisDeadzoneValue();
-					Log.verbose(F("Menu::editIncreaseCurrentMenuValue, deadzone, increment: %d\n"), increment * valueModifier);
-					break;
 
-				case MENU_AXIS_EXPO_Y_POS:
-					mySticks[calculateStickId()].getAxis(calculateAxisId())->setExpo(mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo() + incrementFloat * valueModifier);
-					printAxisExpoValue();
-					break;
+		// do the following only if triggerIncrease == true.
+		if (triggerIncrease)
+		{
+			unsigned char increment = DEFAULT_INCREMENT_CHAR;
+			float incrementFloat = (float) DEFAULT_INCREMENT_FLOAT;
 
-				case MENU_AXIS_REVERSE_Y_POS:
-					// CAUTION: this will not work if value modifier is other than 1 or -1
-					if (valueModifier == 1)
-					{
-						mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(true);
-					}
-					if (valueModifier == -1)
-					{
-						mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(false);
-					}
-					printAxisReverseValue();
-					break;
+			if (currentMenuId == MENU_ID_AXIS)
+			{
+				// select the field which needs to be increased
+				switch (menuCursorY - (unsigned char) FIRST_MENU_LINE)
+				{
+					case MENU_AXIS_DEAD_Y_POS:
 
-				case MENU_AXIS_TRIM_Y_POS:
-					Log.verbose("%d + %d\n", (unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim(),  (signed int) increment * valueModifier);
-					mySticks[calculateStickId()].getAxis(calculateAxisId())->setTrim(signedCharLimiter((signed int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim() + (signed int) increment * valueModifier));
-					printAxisTrimValue();
-					break;
+						mySticks[calculateStickId()].getAxis(calculateAxisId())->setDeadZone(unsignedCharLimiter((unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getDeadZone() + increment * valueModifier));
+						printAxisDeadzoneValue();
+						Log.verbose(F("Menu::editIncreaseCurrentMenuValue, deadzone, increment: %d\n"), increment * valueModifier);
+						break;
+
+					case MENU_AXIS_EXPO_Y_POS:
+						mySticks[calculateStickId()].getAxis(calculateAxisId())->setExpo(mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo() + incrementFloat * valueModifier);
+						printAxisExpoValue();
+						break;
+
+					case MENU_AXIS_REVERSE_Y_POS:
+						// CAUTION: this will not work if value modifier is other than 1 or -1
+						if (valueModifier == 1)
+						{
+							mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(true);
+						}
+						if (valueModifier == -1)
+						{
+							mySticks[calculateStickId()].getAxis(calculateAxisId())->setReverse(false);
+						}
+						printAxisReverseValue();
+						break;
+
+					case MENU_AXIS_TRIM_Y_POS:
+						Log.verbose("%d + %d\n", (unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim(),  (signed int) increment * valueModifier);
+						mySticks[calculateStickId()].getAxis(calculateAxisId())->setTrim(signedCharLimiter((signed int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim() + (signed int) increment * valueModifier));
+						printAxisTrimValue();
+						break;
+				}
 			}
 		}
 	}

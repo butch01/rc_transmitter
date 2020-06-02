@@ -39,6 +39,10 @@
 
 #define DEFAULT_INCREMENT_CHAR 1
 #define DEFAULT_INCREMENT_FLOAT 0.1
+#define MENU_MODIFY_SLOW_INTERVAL_MS 150 // slow interval (after starting of change button pressed)
+#define MENU_MODIFY_SLOW_TIME_RANGE 2000 // time range where slow interval is applied. After that fast interval will be used
+#define MENU_MOFIFY_FAST_INTERVAL_MS 50 // fast interval (after holding the pressed change button for a while)
+#define MENU_MODIFY_TIMEOUT 250 // after that time after last trigger, we assume that the button is not pressed anymore and we reset edit timer
 
 
 class Menu {
@@ -66,6 +70,10 @@ private:
 	signed char myCurrentAxisMenuId; // Id of the axis (Stick 0X -> 0, Stick 0Y -> 1, Stick 1X -> 2, ...   -1 if not set / not applicable)
 	unsigned char unsignedCharLimiter(signed int unsignedCharToLimit);
 	signed char signedCharLimiter(signed int signedCharToLimit);
+
+	unsigned long lastEditChangeValueStartTime; // 0 if not in edit mode / start changing action -> time where edit started
+	unsigned long lastEditChangeValueLastTime; // 0 if not in edit mode / start changing action -> time where edit action was last triggered
+
 
 public:
 	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks);
