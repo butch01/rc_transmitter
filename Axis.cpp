@@ -16,6 +16,8 @@ Axis::Axis() {
 	myTrim = 0;
 	myAxisCalibrationMinValue=0;
 	myAxisCalibrationMaxValue=255;
+	myDeadZone=0;
+	myIsReverse=false;
 
 
 }

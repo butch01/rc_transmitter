@@ -26,17 +26,9 @@
 	#define STICK_LY 1
 	#define STICK_LEFT 0
 
-	// RANGE LIMITATIONS (calibration of poti)
-	// to save memory this calibration can be done by define statement. It won't change until hardware changes
-	#define STICK_LX_MIN_RANGE 30
-	#define STICK_LX_MAX_RANGE 225
-	#define STICK_LY_MIN_RANGE 88
-	#define STICK_LY_MAX_RANGE 202
-
 	// TRIM
-	#define STICK_LX_TRIM -20
-	#define STICK_LY_TRIM 20
-
+	#define STICK_LX_TRIM 0
+	#define STICK_LY_TRIM 0
 
 	// DEADZONE
 	#define STICK_LX_DEADZONE 2
@@ -76,6 +68,9 @@
 // STATUS LED
 #if HW_HAS_STATUS_LED
 	#define STATUS_LED_PIN 7
+	#define STATUS_LED_BLINK_INTERVAL_NOT_CONNECTED_MS 250
+	unsigned long statusLedLastChange=0;
+	bool statusLedBlinkStatus=false;
 #endif
 
 
@@ -87,6 +82,7 @@
 	#endif
 	U8X8_SH1106_128X64_NONAME_HW_I2C display(/* reset=*/ U8X8_PIN_NONE);
 	unsigned char displayContrast = 10;
+
 
 
 	// define the menu (without display the menu makes no sense
@@ -146,6 +142,7 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 
 // define detail logging
 #define LOGGING_RADIO_SENDING 0
+#define LOGGING_RADIO_SENDING_PACKET_ONLY 0
 
 // RC Protocol
 MyRemoteControlProtocolV2 rcProtocol;
@@ -334,15 +331,15 @@ void setup() {
 	sticks[STICK_LEFT].getAxis(AXIS_Y)->setArduinoPin(STICK_LY_PIN);
 
 	// set poti limits
-	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMinValue(STICK_LX_MIN_RANGE);
-	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMaxValue(STICK_LX_MAX_RANGE);
-	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMinValue(STICK_LY_MIN_RANGE);
-	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_MAX_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMinValue(STICK_LX_HW_MIN_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMaxValue(STICK_LX_HW_MAX_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMinValue(STICK_LY_HW_MIN_RANGE);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_HW_MAX_RANGE);
 
 
 	// sticks, set trim
-	sticks[STICK_LEFT].getAxis(AXIS_X)->setTrim(STICK_LX_TRIM);
-	sticks[STICK_LEFT].getAxis(AXIS_Y)->setTrim(STICK_LY_TRIM);
+	sticks[STICK_LEFT].getAxis(AXIS_X)->setTrim(STICK_LX_HW_TRIM);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)->setTrim(STICK_LY_HW_TRIM);
 
 	// set deadzone
 	sticks[STICK_LEFT].getAxis(AXIS_X)->setDeadZone(STICK_LX_DEADZONE);
@@ -353,8 +350,8 @@ void setup() {
 	#endif
 
 	#if HW_NUMBER_OF_STICKS > 1
-		sticks[STICK_RIGHT].getAxis(AXIS_X)->setTrim(STICK_RX_TRIM);
-		sticks[STICK_RIGHT].getAxis(AXIS_Y)->setTrim(STICK_RY_TRIM);
+		sticks[STICK_RIGHT].getAxis(AXIS_X)->setTrim(STICK_RX_HW_TRIM);
+		sticks[STICK_RIGHT].getAxis(AXIS_Y)->setTrim(STICK_RY_HW_TRIM);
 
 		// set deadzone
 		sticks[STICK_RIGHT].getAxis(AXIS_X)->setDeadZone(STICK_RX_DEADZONE);
@@ -398,6 +395,7 @@ void mySend(unsigned char dataToSend[], unsigned char dataLenth, unsigned char r
 					//Log.notice(F("sending\n"));
 					#endif
 
+				#if LOGGING_RADIO_SENDING_PACKET_ONLY
 					// trying to debug the array
 					for (int i=0; i<dataLenth;i++)
 					{
@@ -405,7 +403,7 @@ void mySend(unsigned char dataToSend[], unsigned char dataLenth, unsigned char r
 						Serial.print(" ");
 					}
 					Serial.print("\n");
-
+				#endif
 				nrf24l01Radio.write(dataToSend, dataLenth);
 
 
@@ -478,28 +476,28 @@ void processMenuButtons()
 
 void loop() {
 
-//	// Log.notice(F("reading stick\n"));
-//	// read input of analog sticks
-//	#if HW_NUMBER_OF_STICKS > 0
-//		#if HW_NUMBER_OF_STICKS == 1
-////		unsigned char x=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
-////		unsigned char y=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
-////		Log.notice("x=%d, y=%d\n", x,y);
-//
-//		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_RX);
-//		#else
-//			//rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
-//			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_LX);
-//		#endif
-//
-//		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)-> getCalculatedValueFromPin(), PROT_STICK_LY);
+	// Log.notice(F("reading stick\n"));
+	// read input of analog sticks
+	#if HW_NUMBER_OF_STICKS > 0
+		#if HW_NUMBER_OF_STICKS == 1
+//		unsigned char x=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+//		unsigned char y=sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin();
+//		Log.notice("x=%d, y=%d\n", x,y);
+
+		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_RX);
+		#else
+			//rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_LX_PIN)), PROT_STICK_LX);
+			rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_X)-> getCalculatedValueFromPin(), PROT_STICK_LX);
+		#endif
+
+		rcProtocol.setChannelValue(sticks[STICK_LEFT].getAxis(AXIS_Y)-> getCalculatedValueFromPin(), PROT_STICK_LY);
+	#endif
+
+//	#if HW_NUMBER_OF_STICKS > 1
+//		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_RX_PIN)), PROT_STICK_RX);
+//		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_RY_PIN)), PROT_STICK_RY);
 //	#endif
-//
-////	#if HW_NUMBER_OF_STICKS > 1
-////		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_X)->applyAll(getAnalogValue255(STICK_RX_PIN)), PROT_STICK_RX);
-////		rcProtocol.setChannelValue(sticks[STICK_RIGHT].getAxis(AXIS_Y)->applyAll(getAnalogValue255(STICK_RY_PIN)), PROT_STICK_RY);
-////	#endif
-//
+
 
 
 //
@@ -520,54 +518,6 @@ void loop() {
 		// check menu buttons
 		processMenuButtons();
 	}
-//
-//
-//	if (isButtonEnterPressed())
-//	{
-//		display.drawString(14, 0, "EN");
-//	}
-//	else
-//	{
-//		display.drawString(14, 0, "  ");
-//	}
-//
-//	if (isButtonUpPressed())
-//	{
-//		display.drawString(9, 0, "UP");
-//	}
-//	else
-//	{
-//		display.drawString(9, 0, "  ");
-//	}
-//
-//
-//	if (isButtonDownPressed())
-//	{
-//		display.drawString(9, 6, "DN");
-//	}
-//	else
-//	{
-//		display.drawString(9, 6, "  ");
-//	}
-//
-//
-//	if (isButtonRightPressed())
-//	{
-//		display.drawString(13, 6, "RGT");
-//	}
-//	else
-//	{
-//		display.drawString(13, 6, "   ");
-//	}
-//
-//	if (isButtonLeftPressedOnce())
-//	{
-//		display.drawString(0, 6, "LFT");
-//	}
-//	else
-//	{
-//		display.drawString(0, 6, "   ");
-//	}
 
 	// build protocol value incl. CRC and send it
 	// not sure here what to do with the pointer.
@@ -583,7 +533,7 @@ void loop() {
 
 	// Serial.println("MY_SIZE");
 	// Serial.println((int) rcProtocol.getProtocolLength());
-//	mySend(rcProtocol.getValueArray(), rcProtocol.getProtocolLength(), seletedRadio);
+	mySend(rcProtocol.getValueArray(), rcProtocol.getProtocolLength(), seletedRadio);
 	//nrfSendStaticDummyData();
 	//delay (1000);
 
@@ -604,11 +554,28 @@ void loop() {
 	#if COMPILE_RADIO_INTERFACE_NRF24L01
 		if (nrf24l01Radio.isChipConnected())
 		{
+			// always on if transmitter chip is connected
 			digitalWrite(STATUS_LED_PIN, true);
 		}
 		else
 		{
-			digitalWrite(STATUS_LED_PIN, false);
+			// blink if transmitter chip is NOT connected
+			unsigned long currentTime = millis();
+			if (currentTime - statusLedLastChange > STATUS_LED_BLINK_INTERVAL_NOT_CONNECTED_MS)
+			{
+				if (statusLedBlinkStatus)
+				{
+					digitalWrite(STATUS_LED_PIN, false);
+				}
+				else
+				{
+					digitalWrite(STATUS_LED_PIN, true);
+				}
+				statusLedLastChange = currentTime;
+			}
+
+
+
 		}
 	#endif
 #endif

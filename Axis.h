@@ -7,6 +7,7 @@
 
 #ifndef AXIS_H_
 #define AXIS_H_
+#include "hw_config.h"
 
 class Axis {
 

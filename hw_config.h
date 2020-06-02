@@ -31,4 +31,21 @@
 #endif
 
 
+#if HW_NUMBER_OF_STICKS > 0
+// hardware calibration (hardware specific)
+
+	// RANGE LIMITATIONS (calibration of poti)
+	// to save memory this calibration can be done by define statement. It won't change until hardware changes
+	#define STICK_LX_HW_MIN_RANGE 30
+	#define STICK_LX_HW_MAX_RANGE 225
+	#define STICK_LY_HW_MIN_RANGE 88
+	#define STICK_LY_HW_MAX_RANGE 202
+
+	// TRIM
+	#define STICK_LX_HW_TRIM -20
+	#define STICK_LY_HW_TRIM 20
+
+#endif
+
+
 #endif /* HW_CONFIG_H_ */
