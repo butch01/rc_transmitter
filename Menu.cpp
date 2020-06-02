@@ -521,12 +521,12 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 		bool triggerIncrease = false;
 		unsigned long currentTime = millis();
 
-		Log.verbose(F("edit: %l - %l = %l\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+//		Log.verbose(F("edit: %l - %l = %l\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
 
 		// apply timeout
 		if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MODIFY_TIMEOUT)
 		{
-			Log.verbose(F("edit: timeout -> %l\n"), MENU_MODIFY_TIMEOUT);
+//			Log.verbose(F("edit: timeout -> %l\n"), MENU_MODIFY_TIMEOUT);
 			// reset timer
 			lastEditChangeValueStartTime = 0;
 			lastEditChangeValueLastTime= 0 ;
@@ -539,7 +539,7 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 			triggerIncrease = true;
 			lastEditChangeValueStartTime = currentTime;
 			lastEditChangeValueLastTime = currentTime;
-			Log.verbose(F("edit: %l - %l = %l - trigger new\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+//			Log.verbose(F("edit: %l - %l = %l - trigger new\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
 		}
 		else
 		{
@@ -547,26 +547,26 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 			// not the first edit -> check the time to decide if we trigger the action now or not.
 			if (currentTime - lastEditChangeValueStartTime < (unsigned long) MENU_MODIFY_SLOW_TIME_RANGE)
 			{
-				Log.verbose(F("in slow interval\n"));
+//				Log.verbose(F("in slow interval\n"));
 				// use slow interval
 				// check if we need to trigger now
 				if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MODIFY_SLOW_INTERVAL_MS)
 				{
 					triggerIncrease = true;
 					lastEditChangeValueLastTime = currentTime;
-					Log.verbose(F("edit: %l - %l = %l - trigger slow\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+//					Log.verbose(F("edit: %l - %l = %l - trigger slow\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
 				}
 			}
 			else
 			{
 				// use fast interval
 				// check if we need to trigger now
-				Log.verbose(F("in fast interval\n"));
+//				Log.verbose(F("in fast interval\n"));
 				if (currentTime - lastEditChangeValueLastTime > (unsigned long) MENU_MOFIFY_FAST_INTERVAL_MS)
 				{
 					triggerIncrease = true;
 					lastEditChangeValueLastTime = currentTime;
-					Log.verbose(F("edit: %l - %l = %l - trigger fast\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
+//					Log.verbose(F("edit: %l - %l = %l - trigger fast\n"), currentTime, lastEditChangeValueLastTime, currentTime - lastEditChangeValueLastTime);
 				}
 			}
 		}
@@ -587,7 +587,7 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 
 						mySticks[calculateStickId()].getAxis(calculateAxisId())->setDeadZone(unsignedCharLimiter((unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getDeadZone() + increment * valueModifier));
 						printAxisDeadzoneValue();
-						Log.verbose(F("Menu::editIncreaseCurrentMenuValue, deadzone, increment: %d\n"), increment * valueModifier);
+//						Log.verbose(F("Menu::editIncreaseCurrentMenuValue, deadzone, increment: %d\n"), increment * valueModifier);
 						break;
 
 					case MENU_AXIS_EXPO_Y_POS:
@@ -609,7 +609,7 @@ void Menu::editIncreaseCurrentMenuValue(signed char valueModifier=1)
 						break;
 
 					case MENU_AXIS_TRIM_Y_POS:
-						Log.verbose("%d + %d\n", (unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim(),  (signed int) increment * valueModifier);
+//						Log.verbose("%d + %d\n", (unsigned int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim(),  (signed int) increment * valueModifier);
 						mySticks[calculateStickId()].getAxis(calculateAxisId())->setTrim(signedCharLimiter((signed int) mySticks[calculateStickId()].getAxis(calculateAxisId())->getTrim() + (signed int) increment * valueModifier));
 						printAxisTrimValue();
 						break;
@@ -635,7 +635,7 @@ void Menu::editDecreaseCurrentValue()
  */
 unsigned char Menu::unsignedCharLimiter(signed int unsignedCharToLimit)
 {
-	Log.verbose(F("Menu::unsignedCharLimiter (%d)\n"), unsignedCharToLimit);
+//	Log.verbose(F("Menu::unsignedCharLimiter (%d)\n"), unsignedCharToLimit);
 	if (unsignedCharToLimit > 255)
 	{
 		return 255;
