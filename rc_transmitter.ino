@@ -68,7 +68,7 @@
 // STATUS LED
 #if HW_HAS_STATUS_LED
 	#define STATUS_LED_PIN 7
-	#define STATUS_LED_BLINK_INTERVAL_NOT_CONNECTED_MS 250
+	#define STATUS_LED_BLINK_INTERVAL_NOT_CONNECTED_MS 500
 	unsigned long statusLedLastChange=0;
 	bool statusLedBlinkStatus=false;
 #endif
@@ -566,10 +566,12 @@ void loop() {
 				if (statusLedBlinkStatus)
 				{
 					digitalWrite(STATUS_LED_PIN, false);
+					statusLedBlinkStatus=false;
 				}
 				else
 				{
 					digitalWrite(STATUS_LED_PIN, true);
+					statusLedBlinkStatus=true;
 				}
 				statusLedLastChange = currentTime;
 			}
