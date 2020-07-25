@@ -135,8 +135,8 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 	const byte address[6] = "00001";
 
 	// TRANSMISSION LEVEL
-	#define TRANSMISSION_LEVEL RF24_PA_MIN
-	//#define TRANSMISSION_LEVEL RF24_PA_LOW
+	//#define TRANSMISSION_LEVEL RF24_PA_MIN
+	#define TRANSMISSION_LEVEL RF24_PA_LOW
 #endif
 
 
@@ -150,7 +150,7 @@ MyRemoteControlProtocolV2 rcProtocol;
 unsigned char seletedRadio = RADIO_INTERFACE_NRF24L01;
 
 
-#define MIN_SEND_INTERVAL_MS 25
+#define MIN_SEND_INTERVAL_MS 10
 //#define MIN_SEND_INTERVAL_MS 500
 unsigned long lastSendTime=0;
 
