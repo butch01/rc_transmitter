@@ -96,8 +96,9 @@
 	PushButton pushButtonDown(1, BUTTON_DOWN_PIN);
 	PushButton pushButtonLeft(1, BUTTON_LEFT_PIN);
 	PushButton pushButtonRight(1, BUTTON_RIGHT_PIN);
-	PushButton pushButtonEnter(1, BUTTON_ENTER_PIN);
+	PushButton pushButtonEnter(1, BUTTON_ENTER_PIN); 
 #endif
+
 
 
 
@@ -175,62 +176,146 @@ bool isButtonBackPressedOnce()
 	#endif
 }
 
-bool isButtonEnterPressedOnce()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuEnterPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonEnter.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonEnter.processButtonState(false);
 		return pushButtonEnter.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonLeftPressedOnce()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuLeftPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonLeft.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonLeft.processButtonState(false);
 		return pushButtonLeft.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonLeftPressed()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuLeftPressed()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonLeft.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonLeft.processButtonState(false);
 		return pushButtonLeft.getButtonStateRawDebouncedInputPullup();
 	#endif
 }
 
-bool isButtonRightPressedOnce()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuRightPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonRight.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonRight.processButtonState(false);
 		return pushButtonRight.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonRightPressed()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuRightPressed()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonRight.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonRight.processButtonState(false);
 		return pushButtonRight.getButtonStateRawDebouncedInputPullup();
 	#endif
 }
 
-
-bool isButtonUpPressedOnce()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuUpPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonUp.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonUp.processButtonState(false);
 		return pushButtonUp.getButtonPressedOnlyOnce();
 	#endif
 }
 
-bool isButtonDownPressedOnce()
+/**
+ * checks if the Button has been pressed once (Menu mode. Do not flip logical state of Pusbutton)
+ */
+bool isButtonMenuDownPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonDown.processButtonState();
+		// in menu mode do not flip logical button state of push button
+		pushButtonDown.processButtonState(false);
 		return pushButtonDown.getButtonPressedOnlyOnce();
 	#endif
 }
+
+
+/**
+ * returns the Logical State of a pushbutton
+ */
+bool getButtonAltLeftLogicalState()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonLeft.processButtonState();
+		return pushButtonLeft.getButtonStateLogical();
+	#endif
+}
+
+/**
+ * returns the Logical State of a pushbutton
+ */
+bool getButtonAltRightLogicalState()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonRight.processButtonState();
+		return pushButtonRight.getButtonStateLogical();
+	#endif
+}
+
+/**
+ * returns the Logical State of a pushbutton
+ */
+bool getButtonAltUpLogicalState()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonUp.processButtonState();
+		return pushButtonUp.getButtonStateLogical();
+	#endif
+}
+
+/**
+ * returns the Logical State of a pushbutton
+ */
+bool getButtonAltDownLogicalState()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonDown.processButtonState();
+		return pushButtonDown.getButtonStateLogical();
+	#endif
+}
+
+/**
+ * returns the Logical State of a pushbutton
+ */
+bool getButtonAltEnterLogicalState()
+{
+	#if HW_HAS_NATIVE_BUTTONS
+		pushButtonEnter.processButtonState();
+		return pushButtonEnter.getButtonStateLogical();
+	#endif
+}
+
 
 /**
  * to include in setup()
@@ -292,7 +377,7 @@ void setupNativeButtons()
 		pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
 		pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
 		pinMode(BUTTON_ENTER_PIN, INPUT_PULLUP);
-		#endif
+	#endif
 }
 
 
@@ -445,34 +530,52 @@ void nrfSendStaticDummyData()
  */
 void processMenuButtons()
 {
-	if (isButtonUpPressedOnce())
+	if (isButtonMenuUpPressedOnce())
 	{
 		menu.moveCursorUp();
 		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
 	}
-	if (isButtonDownPressedOnce())
+	if (isButtonMenuDownPressedOnce())
 	{
 		menu.moveCursorDown();
 		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
 	}
-	if (isButtonEnterPressedOnce())
+	if (isButtonMenuEnterPressedOnce())
 	{
 		menu.actionOnEnter();
 		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
 	}
 
-	if (isButtonLeftPressed())
+	if (isButtonMenuLeftPressed())
 	{
 		menu.editDecreaseCurrentValue();
 	}
 
-	if (isButtonRightPressed())
+	if (isButtonMenuRightPressed())
 	{
 		menu.editIncreaseCurrentMenuValue();
 	}
 
+
 }
 
+
+/**
+ * checks the alternative buttons. Available are all menu buttons except for back, because back enables the menu.
+ * writes the logical state of the pushbuttons left, right, up, down, enter to rc protocol channels.
+ */
+void processAlternativeButtons()
+{
+	bool state = false;
+
+	state = getButtonAltLeftLogicalState();
+	rcProtocol.setChannelValue(state, PROT_BTN_SQUARE);
+	rcProtocol.setChannelValue(getButtonAltRightLogicalState(), PROT_BTN_CIRCLE);
+	rcProtocol.setChannelValue(getButtonAltUpLogicalState(), PROT_BTN_TRIANGLE);
+	rcProtocol.setChannelValue(getButtonAltDownLogicalState(), PROT_BTN_CROSS);
+	rcProtocol.setChannelValue(getButtonAltEnterLogicalState(), PROT_BTN_R1);
+	
+}
 
 void loop() {
 
@@ -508,8 +611,6 @@ void loop() {
 		Log.verbose(F("current MenuId = %d\n"),menu.getCurrentMenuId());
 	}
 
-
-
 	// check menu buttons if in menu
 	if (menu.getCurrentMenuId() != MENU_ID_NONE)
 	{
@@ -518,6 +619,15 @@ void loop() {
 		// check menu buttons
 		processMenuButtons();
 	}
+	else
+	{
+		// we are NOT in menu -> check alternative button modes
+		processAlternativeButtons();
+	}
+
+
+
+
 
 	// build protocol value incl. CRC and send it
 	// not sure here what to do with the pointer.
