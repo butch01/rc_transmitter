@@ -136,13 +136,13 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 
 	// TRANSMISSION LEVEL
 	//#define TRANSMISSION_LEVEL RF24_PA_MIN
-	#define TRANSMISSION_LEVEL RF24_PA_LOW
+	#define TRANSMISSION_LEVEL RF24_PA_MAX
 #endif
 
 
 // define detail logging
 #define LOGGING_RADIO_SENDING 0
-#define LOGGING_RADIO_SENDING_PACKET_ONLY 0
+#define LOGGING_RADIO_SENDING_PACKET_ONLY 1
 
 // RC Protocol
 MyRemoteControlProtocolV2 rcProtocol;

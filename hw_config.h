@@ -42,8 +42,8 @@
 	#define STICK_LY_HW_MAX_RANGE 202
 
 	// TRIM
-	#define STICK_LX_HW_TRIM -20
-	#define STICK_LY_HW_TRIM 20
+	#define STICK_LX_HW_TRIM 1
+	#define STICK_LY_HW_TRIM 25
 
 #endif
 
