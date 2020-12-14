@@ -302,8 +302,9 @@ void Menu::actionOnEnter()
 
 		case MENU_ID_AXIS_CHOOSER:
 			// a stick has two axis
-			printMenuAxisDetails(getSelectedMenuEntryId());
 			Log.verbose(F("Menu: MENU_ID_AXIS_CHOOSER -> call printMenuAxisDetails with id %d \n"),getSelectedMenuEntryId());
+			printMenuAxisDetails(getSelectedMenuEntryId());
+
 			break;
 
 		case MENU_ID_AXIS:
@@ -372,13 +373,13 @@ void Menu::printMenuAxisDetails(unsigned char axisMenuId)
 	pDisplay->clear();
 	unsigned char axisId = 0;
 	myCurrentAxisMenuId = axisMenuId;
-
+	Log.trace("axisMenuId: %d", axisMenuId);
 
 	// dirty workaround
-	// this part needs to be generalized. But How do I modify the stings / chars
+	// this part needs to be generalized. But How do I modify the strings / chars
 	if ((unsigned char) axisMenuId /2 == 0)
 	{
-		if (axisId %2 == 0)
+		if (axisMenuId %2 == 0)
 		{
 			printHeadline("STICK 0X");
 		}
@@ -391,7 +392,7 @@ void Menu::printMenuAxisDetails(unsigned char axisMenuId)
 	{
 		if ((unsigned char) axisMenuId /2 == 1)
 		{
-			if (axisId %2 == 0)
+			if (axisMenuId %2 == 0)
 			{
 				printHeadline("STICK 1X");
 			}
