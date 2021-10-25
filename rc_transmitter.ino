@@ -91,10 +91,10 @@
 
 #if HW_HAS_NATIVE_BUTTONS
 	#include <PushButton.h>
-	PushButton pushButtonBack(1, BUTTON_BACK_PIN);
-	PushButton pushButtonUp(1, BUTTON_UP_PIN);
+	PushButton pushButtonBack((char) 1, (int) BUTTON_BACK_PIN);
+	PushButton pushButtonUp((char) 1, (int) BUTTON_UP_PIN);
 	PushButton pushButtonDown(1, BUTTON_DOWN_PIN);
-	PushButton pushButtonLeft(1, BUTTON_LEFT_PIN);
+	PushButton pushButtonLeft((char) 1, (int) BUTTON_LEFT_PIN);
 	PushButton pushButtonRight(1, BUTTON_RIGHT_PIN);
 	PushButton pushButtonEnter(1, BUTTON_ENTER_PIN); 
 #endif
@@ -371,12 +371,12 @@ void setupDisplay()
 void setupNativeButtons()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pinMode(BUTTON_BACK_PIN,INPUT_PULLUP);
-		pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
-		pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
-		pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
-		pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
-		pinMode(BUTTON_ENTER_PIN, INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_BACK_PIN,INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_DOWN_PIN, INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_UP_PIN, INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_LEFT_PIN, INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_RIGHT_PIN, INPUT_PULLUP);
+		pinMode((unsigned char) BUTTON_ENTER_PIN, INPUT_PULLUP);
 	#endif
 }
 
@@ -412,8 +412,8 @@ void setup() {
 
 	#if HW_NUMBER_OF_STICKS > 0
 	// sticks, set arduino pins
-	sticks[STICK_LEFT].getAxis(AXIS_X)->setArduinoPin(STICK_LX_PIN);
-	sticks[STICK_LEFT].getAxis(AXIS_Y)->setArduinoPin(STICK_LY_PIN);
+	sticks[STICK_LEFT].getAxis(AXIS_X)->setArduinoPin((unsigned char) STICK_LX_PIN);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)->setArduinoPin((unsigned char) STICK_LY_PIN);
 
 	// set poti limits
 	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMinValue(STICK_LX_HW_MIN_RANGE);
