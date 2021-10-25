@@ -143,7 +143,7 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 
 // define detail logging
 #define LOGGING_RADIO_SENDING 0
-#define LOGGING_RADIO_SENDING_PACKET_ONLY 1
+#define LOGGING_RADIO_SENDING_PACKET_ONLY 0
 
 // RC Protocol
 MyRemoteControlProtocolV2 rcProtocol;
