@@ -8,6 +8,7 @@
 #include "Axis.h"
 #include "RCStickAxisFunctions.h"
 #include <ArduinoLog.h>
+#define LOGGING_AXIS 1
 
 Axis::Axis() {
 	// TODO Auto-generated constructor stub
@@ -36,10 +37,18 @@ Axis::~Axis() {
  */
 uint8_t Axis::setLimitMin(uint8_t limitMin)
 {
+	#if LOGGING_AXIS == 1
+		char function[]="Axis::setLimitMin";
+	#endif
+
 	if (limitMin >= myAxisCalibrationMinValue && limitMin < myLimitMax)
 	{
 		myLimitMin = limitMin;
 	}
+
+	#if LOGGING_AXIS == 1
+		Log.notice(F("%l - %s - setting limitMin. target value=%d result=%d" CR), millis(), function, limitMin, myLimitMin);
+	#endif
 	return myLimitMin;
 }
 
@@ -49,6 +58,11 @@ uint8_t Axis::setLimitMin(uint8_t limitMin)
  */
 uint8_t Axis::getLimitMin()
 {
+	#if LOGGING_AXIS == 1
+		char function[]="Axis::getLimitMin";
+		Log.notice(F("%l - %s - get limitmin. return value=%d" CR), millis(), function, myLimitMin);
+	#endif
+
 	return myLimitMin;
 }
 
@@ -59,10 +73,19 @@ uint8_t Axis::getLimitMin()
  */
 uint8_t Axis::setLimitMax(uint8_t limitMax)
 {
+	#if LOGGING_AXIS == 1
+		char function[]="Axis::setLimitMax";
+	#endif
+
 	if (limitMax <= myAxisCalibrationMaxValue && limitMax > myLimitMin)
 	{
 		myLimitMax = limitMax;
 	}
+
+	#if LOGGING_AXIS == 1
+		Log.notice(F("%l - %s - setting limitMax. target value=%d result=%d" CR), millis(), function, limitMax, myLimitMax);
+	#endif
+
 	return myLimitMax;
 }
 
@@ -72,6 +95,12 @@ uint8_t Axis::setLimitMax(uint8_t limitMax)
  */
 uint8_t Axis::getLimitMax()
 {
+	#if LOGGING_AXIS == 1
+		char function[]="Axis::getLimitMax";
+		Log.notice(F("%l - %s - get limitMax. return value=%d" CR), millis(), function, myLimitMax);
+	#endif
+
+
 	return myLimitMax;
 }
 

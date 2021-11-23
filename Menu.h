@@ -15,6 +15,7 @@
 #endif
 
 #include "RCStick.h"
+#include "RCConfig.h"
 
 #define FIRST_MENU_LINE 2
 #define DISPLAY_NUMBER_OF_LINES 8
@@ -53,6 +54,7 @@ private:
 	unsigned char currentMenuNumberOfEntries;
 	U8X8_SH1106_128X64_NONAME_HW_I2C *pDisplay; // pointer to display
 	RCStick *mySticks; // pointer to sticks
+	RCConfig *myRcConfig; // pointer for rcconfig
 
 	void printHeadline(char *headline); // prints the headline to display
 
@@ -76,8 +78,9 @@ private:
 	unsigned long lastEditChangeValueLastTime; // 0 if not in edit mode / start changing action -> time where edit action was last triggered
 
 
+
 public:
-	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks);
+	Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks, RCConfig *rcconfig);
 	virtual ~Menu();
 
 	void processCursorNavigation();

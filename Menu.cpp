@@ -8,7 +8,7 @@
 #include "Menu.h"
 #include <ArduinoLog.h>
 
-Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks)
+Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks, RCConfig *rcconfig)
 {
 	pDisplay = display;
 	menuCursorY=(unsigned char) FIRST_MENU_LINE;
@@ -18,6 +18,7 @@ Menu::Menu(U8X8_SH1106_128X64_NONAME_HW_I2C *display, RCStick *sticks)
 	myIsEditMode = false;
 	myCurrentAxisMenuId=-1;
 	lastEditChangeValueStartTime=0;
+	myRcConfig = rcconfig;
 
 }
 
@@ -235,6 +236,9 @@ void Menu::printMenuMain()
 	y++;
 	pDisplay->setCursor(2, y);
 	pDisplay->print("BUTTONS");
+	y++;
+	pDisplay->setCursor(2, y);
+	pDisplay->print("SAVE CONFIG");
 
 	currentMenuNumberOfEntries=y-FIRST_MENU_LINE+1;
 
@@ -331,6 +335,10 @@ void Menu::actionOnEnter()
 					printMenuButtons();
 					Log.verbose(F("Menu: MENU_ID_MAIN -> call printMenuButtons\n"));
 					break;
+				case 3:
+					Log.verbose(F("saving configuration" CR));
+					myRcConfig->saveModelConfig();
+
 
 			}
 		break;

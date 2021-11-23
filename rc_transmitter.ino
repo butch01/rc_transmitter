@@ -22,7 +22,7 @@
 #include "Menu.h"
 
 
-//#include "RCConfig.h"
+#include "RCConfig.h"
 
 
 
@@ -84,6 +84,8 @@
 // add RC Sticks (which owns 2 axis each)
 RCStick sticks[HW_NUMBER_OF_STICKS];
 
+// RC Config
+RCConfig rcConfig;
 
 
 #if HW_HAS_DISPLAY
@@ -98,7 +100,7 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 
 
 	// define the menu (without display the menu makes no sense
-	Menu menu(&display, sticks);
+	Menu menu(&display, sticks, &rcConfig);
 #endif
 
 
@@ -165,8 +167,7 @@ unsigned char seletedRadio = RADIO_INTERFACE_NRF24L01;
 unsigned long lastSendTime=0;
 
 
-// RC Config
-//RCConfig rcConfig;
+
 
 // model store
 #define CONFIG_MODEL_NAME_MAX_LENGTH 10
@@ -192,7 +193,7 @@ bool negateBoolean(bool boolToNegate)
 bool isButtonBackPressedOnce()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonBack.processButtonState();
+		pushButtonBack.processButtonState(true);
 		return pushButtonBack.getButtonPressedOnlyOnce();
 	#endif
 }
@@ -288,7 +289,7 @@ bool isButtonMenuDownPressedOnce()
 bool getButtonAltLeftLogicalState()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonLeft.processButtonState();
+		pushButtonLeft.processButtonState(true);
 		return pushButtonLeft.getButtonStateLogical();
 	#endif
 }
@@ -299,7 +300,7 @@ bool getButtonAltLeftLogicalState()
 bool getButtonAltRightLogicalState()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonRight.processButtonState();
+		pushButtonRight.processButtonState(true);
 		return pushButtonRight.getButtonStateLogical();
 	#endif
 }
@@ -310,7 +311,7 @@ bool getButtonAltRightLogicalState()
 bool getButtonAltUpLogicalState()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonUp.processButtonState();
+		pushButtonUp.processButtonState(true);
 		return pushButtonUp.getButtonStateLogical();
 	#endif
 }
@@ -321,7 +322,7 @@ bool getButtonAltUpLogicalState()
 bool getButtonAltDownLogicalState()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonDown.processButtonState();
+		pushButtonDown.processButtonState(true);
 		return pushButtonDown.getButtonStateLogical();
 	#endif
 }
@@ -332,7 +333,7 @@ bool getButtonAltDownLogicalState()
 bool getButtonAltEnterLogicalState()
 {
 	#if HW_HAS_NATIVE_BUTTONS
-		pushButtonEnter.processButtonState();
+		pushButtonEnter.processButtonState(true);
 		return pushButtonEnter.getButtonStateLogical();
 	#endif
 }
@@ -445,9 +446,9 @@ void setup() {
 	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_HW_MAX_RANGE);
 
 //	// initializing the config. Connecting the sticks
-//	rcConfig.init(sticks);
+	rcConfig.init(sticks);
 //	// switching to the last known model
-//	rcConfig.switchToModel(rcConfig.getLastModelId());
+	rcConfig.switchToModel(rcConfig.getLastModelId());
 
 
 /**
@@ -485,7 +486,9 @@ void setup() {
 		rcProtocol.setChannelValue(0, i);
 	}
 
-
+	rcConfig.dumpEEPROM();
+//	rcConfig.saveModelConfig();
+//	rcConfig.dumpEEPROM();
 }
 
 

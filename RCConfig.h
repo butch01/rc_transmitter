@@ -49,6 +49,7 @@ public:
 	void switchToModel(uint8_t modelId); // sets current model Id and loads the config
 	uint8_t getLastModelId(); // saves the last active ModelId
 
+	void dumpEEPROM(); // dump full eeprom for debugging
 
 
 private:

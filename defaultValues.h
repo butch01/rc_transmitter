@@ -8,7 +8,7 @@
 #ifndef DEFAULTVALUES_H_
 #define DEFAULTVALUES_H_
 
-#define DEFAULT_TRIM 0
+#define DEFAULT_TRIM 3
 #define DEFAULT_DEAD_ZONE 2
 #define DEFAULT_EXPO 1
 #define DEFAULT_REVERSE false
