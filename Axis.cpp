@@ -14,10 +14,12 @@ Axis::Axis() {
 	myArduinoPin = 0;
 	myExpo = 1;
 	myTrim = 0;
-	myAxisCalibrationMinValue=0;
-	myAxisCalibrationMaxValue=255;
-	myDeadZone=0;
-	myIsReverse=false;
+	myAxisCalibrationMinValue = 0;
+	myAxisCalibrationMaxValue = 255;
+	myDeadZone = 0;
+	myIsReverse = false;
+	myLimitMin = 0;
+	myLimitMax = 255;
 
 
 }
@@ -29,9 +31,56 @@ Axis::~Axis() {
 
 
 /**
+ * sets the LimitMin, but only if it is <= myAxisCalibrationMaxValue and is > myLimitMin
+ * returns the current value of myLimitMax. So you can check directly if the set function was successful.
+ */
+uint8_t Axis::setLimitMin(uint8_t limitMin)
+{
+	if (limitMin >= myAxisCalibrationMinValue && limitMin < myLimitMax)
+	{
+		myLimitMin = limitMin;
+	}
+	return myLimitMin;
+}
+
+
+/**
+ * returns myLimitMin
+ */
+uint8_t Axis::getLimtMin()
+{
+	return myLimitMin;
+}
+
+
+/**
+ * sets the LimitMax, but only if it is <= myAxisCalibrationMaxValue and is > myLimitMin
+ * returns the current value of myLimitMax. So you can check directly if the set function was successful.
+ */
+uint8_t Axis::setLimitMax(uint8_t limitMax)
+{
+	if (limitMax <= myAxisCalibrationMaxValue && limitMax > myLimitMin)
+	{
+		myLimitMax = limitMax;
+	}
+	return myLimitMax;
+}
+
+
+/**
+ * returns myLimitMin
+ */
+uint8_t Axis::getLimitMax()
+{
+	return myLimitMax;
+}
+
+
+
+/**
  * gets value from arduino pin and enriches it.
  */
-unsigned char Axis::getCalculatedValueFromPin()
+uint8_t Axis::getCalculatedValueFromPin()
 {
 	return RCStickAxisFunctions::enrichValue(
 			analogRead(myArduinoPin), // inputValueRaw,
@@ -59,7 +108,7 @@ void Axis::setCalibrationMinValue(unsigned char axisCalibrationMinValue)
 /**
  * get axis calibration value min
  */
-unsigned char Axis::getCalibrationMinValue()
+uint8_t Axis::getCalibrationMinValue()
 {
 	return this -> myAxisCalibrationMinValue;
 }
@@ -80,7 +129,7 @@ void Axis::setCalibrationMaxValue(unsigned char axisCalibrationMaxValue)
 /**
  * get axis calibration value max
  */
-unsigned char Axis::getCalibrationMaxValue()
+uint8_t Axis::getCalibrationMaxValue()
 {
 	return this -> myAxisCalibrationMaxValue;
 }
@@ -98,7 +147,7 @@ void Axis::setTrim(signed char trimValue)
 /**
  * get trim
  */
-signed char Axis::getTrim()
+int8_t Axis::getTrim()
 {
 	return this -> myTrim;
 }
@@ -118,7 +167,7 @@ void Axis::setDeadZone(unsigned char deadZone)
 /**
  * get deadzone
  */
-unsigned char Axis::getDeadZone()
+uint8_t Axis::getDeadZone()
 {
 	return this -> myDeadZone;
 

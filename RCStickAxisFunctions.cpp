@@ -22,7 +22,8 @@ RCStickAxisFunctions::~RCStickAxisFunctions() {
  * add all supported enrichments (reverse, trim, expo, fload, calibration)
  * returns unsigned char
  */
-static unsigned char RCStickAxisFunctions::enrichValue (unsigned int inputValueRaw, unsigned int analogResolution, bool isReverse, signed char trim, unsigned char deadZone, float expo, unsigned char calMin, unsigned char calMax)
+static unsigned char RCStickAxisFunctions::enrichValue (uint16_t inputValueRaw, uint16_t analogResolution, bool isReverse, int8_t trim, uint8_t deadZone, float expo, uint8_t calMin, uint8_t calMax, uint8_t limitMin, uint8_t limitMax)
+
 {
 	// set to input value
 	unsigned char value = map (inputValueRaw,0,analogResolution, 0,255);
@@ -30,8 +31,8 @@ static unsigned char RCStickAxisFunctions::enrichValue (unsigned int inputValueR
 		Serial.print("map: ");
 		Serial.print(value);
 	#endif
-	// apply calibration
-	value = applyCalibration(value, calMin, calMax);
+	// apply calibration and limit
+	value = applyCalibrationAndLimit(value, calMin, calMax, limitMin, limitMax);
 
 	#if IS_DEBUG_ENRICH
 		Serial.print(" cal: ");
@@ -188,7 +189,7 @@ static unsigned char RCStickAxisFunctions::applyExpo(unsigned char inputValue, f
 /**
  * assignes the calibration of the hardware poti
  */
-static unsigned char RCStickAxisFunctions::applyCalibration(unsigned char value, unsigned char calMin, unsigned char calMax)
+static unsigned char RCStickAxisFunctions::applyCalibrationAndLimit(uint8_t value, uint8_t calMin, uint8_t calMax, uint8_t limitMin, uint8_t limitMax)
 {
 	unsigned char calculatedValue = value;
 
@@ -206,7 +207,7 @@ static unsigned char RCStickAxisFunctions::applyCalibration(unsigned char value,
 	}
 
 	// map the value based on limits
-	calculatedValue = map (calculatedValue, calMin, calMax, 0, 255);
+	calculatedValue = map (calculatedValue, calMin, calMax, limitMin, limitMax);
 
 	return calculatedValue;
 }

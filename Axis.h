@@ -7,6 +7,7 @@
 
 #ifndef AXIS_H_
 #define AXIS_H_
+#include <arduino.h>
 #include "hw_config.h"
 
 class Axis {
@@ -15,27 +16,37 @@ class Axis {
 		Axis();
 		virtual ~Axis();
 
+		// Trim
 		void setTrim(signed char trimValue);
-		signed char getTrim();
+		int8_t getTrim();
 
+		// Dead Zone
 		void setDeadZone(unsigned char deadZone);
-		unsigned char getDeadZone();
+		uint8_t getDeadZone();
 
+		// Reverse
 		void setReverse(bool isReverse);
 		bool getReverse();
 
+		// Limits. Limit will be considered as +/- 100% (0/255).
+		uint8_t setLimitMin(uint8_t limitMin);
+		uint8_t getLimitMin();
 
+		uint8_t setLimitMax(uint8_t limitMax);
+		uint8_t getLimitMax();
+
+		// Expo
 		void setExpo(float expoValue); // sets the expo value
 		float getExpo(); // gets the exp value
 
 
 		// returns the current value
-		unsigned char getCalculatedValueFromPin();
+		uint8_t getCalculatedValueFromPin();
 
 		// Calibration
 		void setCalibrationMinValue(unsigned char axisCalibrationMinValue);
-		unsigned char Axis::getCalibrationMinValue();
-		unsigned char Axis::getCalibrationMaxValue();
+		uint8_t getCalibrationMinValue();
+		uint8_t getCalibrationMaxValue();
 		void setCalibrationMaxValue(unsigned char axisCalibrationMaxValue);
 
 		// Arduino Pin
@@ -44,15 +55,18 @@ class Axis {
 
 	private:
 
-		signed char myTrim;
-		unsigned char myDeadZone;
+		int8_t myTrim;
+		uint8_t myDeadZone;
 		bool myIsReverse;
 		float myExpo;
 
-		unsigned char myAxisCalibrationMinValue;
-		unsigned char myAxisCalibrationMaxValue;
+		uint8_t myAxisCalibrationMinValue;  // that is the PHYSICAL limit of the controller
+		uint8_t myAxisCalibrationMaxValue;  // that is the PHYSICAL limit of the controller
 
-		unsigned char  myArduinoPin;
+		uint8_t  myArduinoPin;
+
+		uint8_t myLimitMin; // that is the LOGICAL limit of the axis. It can be used to limit the travel of the axis
+		uint8_t myLimitMax; // that is the LOGICAL limit of the axis. It can be used to limit the travel of the axis
 
 
 

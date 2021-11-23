@@ -205,6 +205,10 @@ void Menu::printMenuId(unsigned char menuIdToPrint)
 				printMenuAxisChooser();
 				break;
 
+//			case MENU_ID_MODEL_SELECT:
+//				printMenModelSelect();
+//				break;
+
 			default:
 				printMenuMain();
 				break;
@@ -264,6 +268,37 @@ void Menu::printMenuAxisChooser()
 	currentMenuNumberOfEntries=(unsigned char) HW_NUMBER_OF_STICKS * 2 ;
 	printMenuCursor();
 }
+
+
+/**
+ * prints all available Models
+ */
+void Menu::printMenuModelSelect()
+{
+	currentMenuId=MENU_ID_MODEL_SELECT;
+
+	pDisplay->clear();
+	printHeadline("CHOOSE MODEL");
+
+
+
+		pDisplay->setCursor(2, FIRST_MENU_LINE + 1);
+		pDisplay->print("Porsche");
+
+		pDisplay->setCursor(2, FIRST_MENU_LINE + 2);
+		pDisplay->print("Bully");
+
+		pDisplay->setCursor(2, FIRST_MENU_LINE + 3);
+		pDisplay->print("K989");
+
+
+
+	menuCursorY = FIRST_MENU_LINE;
+	currentMenuNumberOfEntries=(unsigned char) 3 ;
+	printMenuCursor();
+}
+
+
 
 
 /**

@@ -16,13 +16,13 @@ public:
 	virtual ~RCStickAxisFunctions();
 
 	// add all supported enrichments (reverse, trim, expo, fload, calibration). returns unsigned char
-	static unsigned char enrichValue (unsigned int inputValue, unsigned int analogResolution, bool isReverse, signed char trim, unsigned char deadZone, float expo, unsigned char calMin, unsigned char calMax);
+	static unsigned char enrichValue (uint16_t inputValueRaw, uint16_t analogResolution, bool isReverse, int8_t trim, uint8_t deadZone, float expo, uint8_t calMin, uint8_t calMax, uint8_t limitMin, uint8_t limitMax);
 
 	// applies reverse
 	static unsigned char applyReverse(unsigned char value, bool isReverse);
 
-	// applies the axis calibration
-	static unsigned char applyCalibration(unsigned char value, unsigned char calMin, unsigned char calMax);
+	// applies the axis calibration  and Limit
+	static unsigned char applyCalibrationAndLimit(uint8_t value, uint8_t calMin, uint8_t calMax, uint8_t limitMin, uint8_t limitMax);
 
 	// applies deadzone
 	static unsigned char applyDeadZone (unsigned char inputValue, unsigned char deadZone);

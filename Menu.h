@@ -27,6 +27,7 @@
 #define MENU_ID_AXIS 11 // detail configuration of a single stick's axis
 #define MENU_ID_RECEIVER 5 // menu where to choose the reviever
 #define MENU_ID_BUTTONS 20 // menu where to choose buttons for config
+#define MENU_ID_MODEL_SELECT 30 // menu where you can choose between the models
 
 #define MENU_COL_0_X_POS 2
 
@@ -106,6 +107,7 @@ public:
 	void printMenuReceiver();
 	void printMenuButtons();
 	void printMenuAxisDetails(unsigned char axisMenuId);
+	void printMenuModelSelect();
 
 	void editIncreaseCurrentMenuValue(signed char valueModifier=1);
 	void editDecreaseCurrentValue();

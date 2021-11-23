@@ -15,6 +15,9 @@
 #include "hw_config.h"
 #include "Menu.h"
 
+#include "RCConfig.h"
+#include "defaultValues.h"
+#include "loggingConfig.h"
 
 #define VERSIONSTRING "0.1"
 
@@ -141,9 +144,7 @@ RCStick sticks[HW_NUMBER_OF_STICKS];
 #endif
 
 
-// define detail logging
-#define LOGGING_RADIO_SENDING 0
-#define LOGGING_RADIO_SENDING_PACKET_ONLY 0
+
 
 // RC Protocol
 MyRemoteControlProtocolV2 rcProtocol;
@@ -154,6 +155,18 @@ unsigned char seletedRadio = RADIO_INTERFACE_NRF24L01;
 #define MIN_SEND_INTERVAL_MS 10
 //#define MIN_SEND_INTERVAL_MS 500
 unsigned long lastSendTime=0;
+
+
+// RC Config
+RCConfig rcConfig;
+
+// model store
+#define CONFIG_MODEL_NAME_MAX_LENGTH 10
+#define CONFIG_MODEL_COUNT 4
+// currently with static naming. Will be changeable and stored / read from eeprom later
+char configModelNames[CONFIG_MODEL_COUNT][CONFIG_MODEL_NAME_MAX_LENGTH] = {{'B','U','L','L','Y'},{'K','9','8','9'},{'P','o','r','s','c','h','e'},{'D','B','R','9'}};
+
+
 
 bool negateBoolean(bool boolToNegate)
 {
@@ -385,6 +398,11 @@ void setup() {
 
 
 	Serial.begin(115200);
+	// initializing the config. Connecting the sticks
+	rcConfig.init(sticks);
+	// switching to the last known model
+	rcConfig.switchToModel(rcConfig.getLastModelId());
+
 	//Serial.println(F("starting sender ;-)"));
 	Log.begin   (LOG_LEVEL_VERBOSE, &Serial);
 	Log.notice(F("starting sender with logging\n"));
@@ -422,6 +440,8 @@ void setup() {
 	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_HW_MAX_RANGE);
 
 
+/**
+ * commented out, because we now use the eeprom loader
 	// sticks, set trim
 	sticks[STICK_LEFT].getAxis(AXIS_X)->setTrim(STICK_LX_HW_TRIM);
 	sticks[STICK_LEFT].getAxis(AXIS_Y)->setTrim(STICK_LY_HW_TRIM);
@@ -431,7 +451,9 @@ void setup() {
 	sticks[STICK_LEFT].getAxis(AXIS_Y)->setDeadZone(STICK_LY_DEADZONE);
 
 	// set reverse
-	//sticks[STICK_LEFT].getAxis(AXIS_Y)->setReverse(true);
+	sticks[STICK_LEFT].getAxis(AXIS_Y)->setReverse(true);
+*/
+
 	#endif
 
 	#if HW_NUMBER_OF_STICKS > 1
@@ -467,7 +489,9 @@ unsigned char getAnalogValue255(unsigned char arduinoAnalogPin)
  */
 void mySend(unsigned char dataToSend[], unsigned char dataLenth, unsigned char radioInterface)
 {
+	#if LOGGING_RADIO_SENDING == 1
 	char function[]="mySend";
+	#endif
 	if (millis() - (unsigned long) MIN_SEND_INTERVAL_MS > lastSendTime)
 	{
 		// need to send data
