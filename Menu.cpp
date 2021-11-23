@@ -148,6 +148,22 @@ void Menu::printUpdateSingleValue(unsigned char x, unsigned char y, unsigned cha
 }
 
 /**
+ * prints a single value at a specific position. Alignment left (don't know how to align right).
+ * Positions between x,y and x+length,y will be wiped with spaces first. Then intValue will be written at x,y
+ */
+void Menu::printUpdateSingleValueFloat(unsigned char x, unsigned char y, unsigned char length, float floatValue)
+{
+	pDisplay->setCursor(x, y);
+	for (unsigned char i=0; i<length;i++)
+	{
+		pDisplay->print(" ");
+	}
+	pDisplay->setCursor(x, y);
+	pDisplay->print(floatValue,1);
+}
+
+
+/**
  * returns the id of the selected menu element
  */
 unsigned char Menu::getMenuElementId()
@@ -538,7 +554,7 @@ void Menu::printAxisReverseValue()
  */
 void Menu::printAxisExpoValue()
 {
-	printUpdateSingleValue(MENU_AXIS_VALUE_X_POS, MENU_AXIS_EXPO_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo());
+	printUpdateSingleValueFloat(MENU_AXIS_VALUE_X_POS, MENU_AXIS_EXPO_Y_POS + FIRST_MENU_LINE, 4, mySticks[calculateStickId()].getAxis(calculateAxisId())->getExpo());
 }
 
 /**

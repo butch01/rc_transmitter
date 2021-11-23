@@ -94,6 +94,7 @@ public:
 
 	unsigned char getMenuElementId(); // returns the selected menu element
 	void printUpdateSingleValue(unsigned char x, unsigned char y, unsigned char length, signed int intValue); // prints a single int value. clears spaces before.
+	void printUpdateSingleValueFloat(unsigned char x, unsigned char y, unsigned char length, float floatValue); // prints a single float value. clears spaces before.
 	int debugDisplayAddress();
 
 	void printMenuMain(); // Prints the main menu
