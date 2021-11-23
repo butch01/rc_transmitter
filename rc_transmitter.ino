@@ -15,11 +15,11 @@
 #include "hw_config.h"
 #include "Menu.h"
 
-#include "RCConfig.h"
+//#include "RCConfig.h"
 #include "defaultValues.h"
 #include "loggingConfig.h"
 
-#define VERSIONSTRING "0.1"
+#define VERSIONSTRING "0.2"
 
 
 
@@ -158,7 +158,7 @@ unsigned long lastSendTime=0;
 
 
 // RC Config
-RCConfig rcConfig;
+//RCConfig rcConfig;
 
 // model store
 #define CONFIG_MODEL_NAME_MAX_LENGTH 10
@@ -398,11 +398,6 @@ void setup() {
 
 
 	Serial.begin(115200);
-	// initializing the config. Connecting the sticks
-	rcConfig.init(sticks);
-	// switching to the last known model
-	rcConfig.switchToModel(rcConfig.getLastModelId());
-
 	//Serial.println(F("starting sender ;-)"));
 	Log.begin   (LOG_LEVEL_VERBOSE, &Serial);
 	Log.notice(F("starting sender with logging\n"));
@@ -438,6 +433,11 @@ void setup() {
 	sticks[STICK_LEFT].getAxis(AXIS_X)-> setCalibrationMaxValue(STICK_LX_HW_MAX_RANGE);
 	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMinValue(STICK_LY_HW_MIN_RANGE);
 	sticks[STICK_LEFT].getAxis(AXIS_Y)-> setCalibrationMaxValue(STICK_LY_HW_MAX_RANGE);
+
+//	// initializing the config. Connecting the sticks
+//	rcConfig.init(sticks);
+//	// switching to the last known model
+//	rcConfig.switchToModel(rcConfig.getLastModelId());
 
 
 /**

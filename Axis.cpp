@@ -47,7 +47,7 @@ uint8_t Axis::setLimitMin(uint8_t limitMin)
 /**
  * returns myLimitMin
  */
-uint8_t Axis::getLimtMin()
+uint8_t Axis::getLimitMin()
 {
 	return myLimitMin;
 }
@@ -90,8 +90,9 @@ uint8_t Axis::getCalculatedValueFromPin()
 			myDeadZone, // deadZone,
 			myExpo, //expo,
 			myAxisCalibrationMinValue, // calMin,
-			myAxisCalibrationMaxValue  // calMax
-			);
+			myAxisCalibrationMaxValue,  // calMax
+			myLimitMin,
+			myLimitMax);
 
 }
 

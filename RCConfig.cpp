@@ -75,7 +75,7 @@ void RCConfig::readConfigModelNamesFromEEPROM()
 		}
 		else
 		{
-			configModelNames[model] = "Model ";
+			configModelNames[model][0] = "Model ";
 			configModelNames[model][6] = model + 48; // 48 is the ascii offset for numbers. decimal 0 = ascii 48
 		}
 	}
