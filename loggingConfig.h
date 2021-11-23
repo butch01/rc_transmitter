@@ -18,4 +18,6 @@
 // rcconfig
 #define LOGGING_RCCONFIG_DEBUG 0
 
+#define LOGGING_RCCONFIG_DEBUG 1
+
 #endif /* LOGGINGCONFIG_H_ */

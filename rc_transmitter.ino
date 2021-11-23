@@ -7,19 +7,24 @@
 * Library: TMRh20/RF24, https://github.com/tmrh20/RF24/
 */
 
-#include "RCStick.h"
-#include "MyRemoteControlProtocolV2.h"
+#define VERSIONSTRING "0.2"
 #include <ArduinoLog.h>
-// #include "RCStickAxisFunctions.h"
-#include "Axis.h"
-#include "hw_config.h"
-#include "Menu.h"
 
-//#include "RCConfig.h"
+#include "hw_config.h"
 #include "defaultValues.h"
 #include "loggingConfig.h"
 
-#define VERSIONSTRING "0.2"
+#include "RCStick.h"
+#include "MyRemoteControlProtocolV2.h"
+#include "RCStickAxisFunctions.h"
+#include "Axis.h"
+
+#include "Menu.h"
+
+
+//#include "RCConfig.h"
+
+
 
 
 
@@ -76,6 +81,10 @@
 	bool statusLedBlinkStatus=false;
 #endif
 
+// add RC Sticks (which owns 2 axis each)
+RCStick sticks[HW_NUMBER_OF_STICKS];
+
+
 
 #if HW_HAS_DISPLAY
 	// define the display config
@@ -92,21 +101,20 @@
 	Menu menu(&display, sticks);
 #endif
 
+
 #if HW_HAS_NATIVE_BUTTONS
 	#include <PushButton.h>
-	PushButton pushButtonBack((char) 1, (int) BUTTON_BACK_PIN);
-	PushButton pushButtonUp((char) 1, (int) BUTTON_UP_PIN);
-	PushButton pushButtonDown(1, BUTTON_DOWN_PIN);
-	PushButton pushButtonLeft((char) 1, (int) BUTTON_LEFT_PIN);
-	PushButton pushButtonRight(1, BUTTON_RIGHT_PIN);
-	PushButton pushButtonEnter(1, BUTTON_ENTER_PIN); 
+	PushButton pushButtonBack(0, (uint8_t) BUTTON_BACK_PIN);
+	PushButton pushButtonUp(0, (uint8_t) BUTTON_UP_PIN);
+	PushButton pushButtonDown(0, BUTTON_DOWN_PIN);
+	PushButton pushButtonLeft(0, (uint8_t) BUTTON_LEFT_PIN);
+	PushButton pushButtonRight(0, BUTTON_RIGHT_PIN);
+	PushButton pushButtonEnter(0, BUTTON_ENTER_PIN);
 #endif
 
 
 
 
-// add RC Sticks (which owns 2 axis each)
-RCStick sticks[HW_NUMBER_OF_STICKS];
 
 
 #define RADIO_SERIAL 0
@@ -398,9 +406,11 @@ void setup() {
 
 
 	Serial.begin(115200);
+//	Serial.println("Hello");
 	//Serial.println(F("starting sender ;-)"));
 	Log.begin   (LOG_LEVEL_VERBOSE, &Serial);
 	Log.notice(F("starting sender with logging\n"));
+
 
 	// setup status LED
 	#if HW_HAS_STATUS_LED
@@ -474,7 +484,11 @@ void setup() {
 	{
 		rcProtocol.setChannelValue(0, i);
 	}
+
+
 }
+
+
 
 /**
  * converts analog read of given pin, mapped to range 0-255
@@ -601,7 +615,9 @@ void processAlternativeButtons()
 	
 }
 
+
 void loop() {
+
 
 	// Log.notice(F("reading stick\n"));
 	// read input of analog sticks
@@ -715,4 +731,6 @@ void loop() {
 		}
 	#endif
 #endif
+
+
 }
